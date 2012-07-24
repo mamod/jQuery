@@ -1,0 +1,42 @@
+=head1 Methods
+
+
+=head2 attr
+
+=over 4
+
+=item attr( attributeName )
+
+Get the value of an attribute for the first element in the set of matched
+elements.
+
+=item attr( attributeName, value )
+
+Set one or more attributes for the set of matched elements.
+
+=item attr( map )
+
+map: A hash ref of attribute-value pairs to set.
+
+=item attr( attributeName, sub { my ( $index, $attr ) = @_; } )
+
+=back
+
+
+Check jQuery API
+
+http://api.jquery.com/attr/
+
+=cut
+
+
+=head2 removeAttr
+
+Remove an attribute from each element in the set of matched elements.
+
+Check jQuery API
+
+http://api.jquery.com/removeAttr/
+
+=cut
+
