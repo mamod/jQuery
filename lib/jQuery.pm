@@ -5,6 +5,7 @@ use strict;
 use XML::LibXML 1.70;
 use HTML::Entities;
 use Encode;
+use Carp;
 
 #use HTML::Selector::XPath 'selector_to_xpath';
 #use Scalar::Util qw(weaken);
@@ -97,11 +98,9 @@ sub jquery {
     }
     
     if ($context){
-        
         if (@_){
             $context = bless([$context,@_], ref $context);
         }
-        
         return jQuery($context)->find($selector);
     }
     
@@ -117,7 +116,6 @@ sub jquery {
     return $this if !$selector;
     
     my $nodes;
-    
     if ( ref($selector) =~ /XML::/i ){
         
         if ($selector->isa('ARRAY')){
@@ -138,21 +136,14 @@ sub jquery {
     }
     
     else {
-        
         $nodes = $this->_find($selector);
-        
         ##another try to create html fragment
         if (!$nodes->[0]){
             $nodes = $this->createNode($selector);
         }
-        
     }
     
     return $this->pushStack(@$nodes);
-    
-    #return wantarray
-    #? @$nodes
-    #: $this->pushStack(@$nodes);
     
 }
 
@@ -178,7 +169,6 @@ sub pushStack {
     return $self;
 }
 
-
 sub toArray {
     
     my $self = shift;
@@ -200,8 +190,6 @@ sub toArray {
     @nodes
     : \@nodes;
 }
-
-
 
 sub getNodes {
     
@@ -226,14 +214,22 @@ sub getNodes {
 }
 
 
-
 sub _find {
     my ($this, $selector, $context ) = @_;
     
     $context ||= $this->document;
-    $selector = $this->_translate_css_to_xpath($selector,$context->nodePath);
+    my @nodes;
     
-    my @nodes = $context->findnodes($selector) if $selector;
+    eval {
+        if ($selector !~ m/\//){
+            $selector = $this->_translate_css_to_xpath($selector,$context->nodePath);
+        }
+        @nodes = $context->findnodes($selector) if $selector;
+    };
+    
+    if ($@){
+        croak $@;
+    }
     
     return wantarray 
     ? @nodes
@@ -282,7 +278,6 @@ sub _translate_css_to_xpath {
         my $empty_path =0;
         my $single = 0;
         
-        
         ##setting starting search path custom path is // which search down all elements
         my $path = '//';
         $path = $custompath if $custompath;
@@ -294,7 +289,6 @@ sub _translate_css_to_xpath {
             my $value = $2;
             my $pos2 = 0;
             
-            
             ##set empty starting path
             if ($custompath eq 'empty' && $pos2 eq '0'){
                 $path = '';
@@ -305,7 +299,6 @@ sub _translate_css_to_xpath {
                 $path = '/';
                 $path = '//' if $directpath eq '2';
                 $path = '' if $empty_path;
-                
                 
                 if (($type =~ /(\:|\.|\#)/ || $value =~ /\[.*?\]/)){
                     $selector .= $path.'*';
@@ -396,7 +389,6 @@ sub _translate_css_to_xpath {
                 }
                 
             }
-            
             
             ##this is tag
             elsif (!$type){
@@ -531,8 +523,7 @@ sub _translate_css_to_xpath {
                 
             }
             
-            $pos++;
-            $pos2++;
+            $pos++; $pos2++;
         }
         
         if ($single){
@@ -550,12 +541,9 @@ sub _translate_css_to_xpath {
 
 
 sub as_HTML {
-    
     my $self = shift;
     
     my $doc = $self->document;
-    
-    
     if (ref($doc) eq 'XML::LibXML::Document' ){
         
         my $html = $doc->serialize_html();
@@ -568,7 +556,6 @@ sub as_HTML {
     }
     
     return $doc->getDocumentElement->html();
-    #return $doc->serialize_html();
 }
 
 
@@ -577,11 +564,10 @@ sub as_XML {
     my $doc = $_[0]->document;
     
     if ($$DOC ne $$doc){
-        #return bless($doc, __PACKAGE__)->find('root')->html();
         
         if (ref($doc) eq 'XML::LibXML::Document' ){
-            my $xml = $doc->serialize();
             
+            my $xml = $doc->serialize();
             if ($xml =~ m/<div class="REMOVE_THIS_ELEMENT">/g){
                 $xml =~ s/(?:.*?)<div class="REMOVE_THIS_ELEMENT">(.*)<\/div>(?:.*)/$1/s;
             }
@@ -590,10 +576,6 @@ sub as_XML {
         }
         
         return $doc->getDocumentElement->html();
-        
-        #my $newdoc = XML::LibXML::Document->new($doc->version, $doc->encoding);
-        #$newdoc->setDocumentElement( $doc->getDocumentElement->findnodes('//root//*') );
-        #return $newdoc->serialize();
     }
     
     return $doc->serialize();
@@ -601,8 +583,8 @@ sub as_XML {
 
 
 sub is_HTML {
-    my ($self,$html) = @_;
     
+    my ($self,$html) = @_;
     ### very permative solution but it seems to work with all tests so far
     if ($html =~ /<.*>/g){
         return 1;
@@ -610,30 +592,12 @@ sub is_HTML {
     return 0;
 }
 
-sub decode_html { return decode_entities($_[1]); }
-
-sub createNode2 {
-    
-    my ($self,$html) = @_;
-    
-    my $node;
-    
-    $html = "<div class='REMOVE_THIS_ELEMENT'>".$html."</div>";
-    
-    my $new = $self->new($html);
-    
-    return $new->jQuery('.REMOVE_THIS_ELEMENT *');
-    
-}
-
 sub createNode {
     
     my ($self,$html) = @_;
     my $node;
     
-    if (!$PARSER){
-        $self->new();
-    }
+    if (!$PARSER){ $self->new(); }
     
     $html = "<div class='REMOVE_THIS_ELEMENT'>".$html."</div>";
     if ($html =~ /^<div class='REMOVE_THIS_ELEMENT'><\?xml/) {
@@ -644,26 +608,17 @@ sub createNode {
     }
     
     $DOC = $node if !$DOC;
-    #$THIS->{document} = $node;
-    
-    #my $nodes = $node->getDocumentElement->findnodes("body/*");
     $node->removeInternalSubset;
-    
-    #$node = $node->childNodes->[0];
-    my $nodes;
-    
-    #if ($ishtml){
-        $nodes = $node->getDocumentElement->findnodes("//*[\@class='REMOVE_THIS_ELEMENT']")->[0]->childNodes;
-    #}
-    
-    #else {
-    #    $nodes = $node->getDocumentElement->findnodes("//*[\@class='REMOVE_THIS_ELEMENT']/*");
-    #}
-    
+    my $nodes = $node->getDocumentElement->findnodes("//*[\@class='REMOVE_THIS_ELEMENT']")->[0]->childNodes;
     return $nodes;
-    
-    return bless($nodes, __PACKAGE__);
+}
 
+
+sub createNode2 {
+    my ($self,$html) = @_;
+    $html = "<div class='REMOVE_THIS_ELEMENT'>".$html."</div>";
+    my $new = $self->new($html);
+    return $new->jQuery('.REMOVE_THIS_ELEMENT *');
 }
 
 ##detect node parent document
@@ -671,18 +626,15 @@ sub document {
 
     my $self = shift;
     my $doc;
-    
     if ($self->isa('ARRAY') && $self->[0]){
         $doc = $self->[0]->ownerDocument;
     }
-    
     elsif ($self->isa('HASH') && $self->{document}){
         $doc = $self->{document};
     }
-    
     return $doc ? $doc : $DOC;
-    
 }
+
 
 
 sub cloneDOC {
@@ -691,11 +643,12 @@ sub cloneDOC {
     return bless([$clone], __PACKAGE__);
 }
 
-
+sub decode_html { return decode_entities($_[1]); }
 sub parser { return shift->{parser}; }
 
 
-###custom internal functions copied from jQuery.js
+###custom internal functions
+###copied from jQuery.js
 sub body {
     return shift->getElementsByTagName('body');
 }
@@ -710,22 +663,17 @@ sub makeArray {
 	push @{$ret}, @{$array};
     }
     
-    else {
-        $ret = \@_;
-    }
+    else { $ret = \@_; }
     
     return wantarray
     ? @$ret
     : $ret;
-    
 }
 
 sub merge {
     
     my ( $first, $second ) = @_;
-    
     my $i = _length($first);
-    
     my $j = 0;
     
     if ( _length($second) ) {
@@ -742,16 +690,13 @@ sub merge {
 
     return wantarray
     ? @$first
-    : $first ;
-    
+    : $first ;   
 }
 
 sub _length {
-    
     if (ref $_[0] eq 'ARRAY'){
         @_ = @{$_[0]};
     }
-    
     return $#_ + 1;
 }
 
@@ -759,8 +704,6 @@ sub isDisconnected {
     my $node = shift;
     return !$node || !$node->parentNode || $node->parentNode->nodeType == 11;
 }
-
-
 
 sub unique {
     my %hash;
@@ -878,20 +821,10 @@ Method for matching a set of elements in a document
     * XML::LibXML 1.70 and later
     * LWP::UserAgent
     * HTML::Entities
-    * HTTP::Request::Common
-
-=head1 INSTALLATION
-
-To install this module type the following:
-
-   perl Makefile.PL
-   make
-   make test
-   make install
 
 =head1 Methods
 
-See jQuery::Functions
+See jQuery::Functions documents
 
 =head1 Examples
 
