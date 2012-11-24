@@ -7,10 +7,6 @@ use HTML::Entities;
 use Encode;
 use Carp;
 
-#use HTML::Selector::XPath 'selector_to_xpath';
-#use Scalar::Util qw(weaken);
-#use Data::Dumper; #for testing
-
 use base qw/jQuery::Functions Exporter/;
 our @EXPORT = qw(jquery jQuery this);
 
@@ -30,52 +26,36 @@ sub new {
     my $doc;
     
     if (!$PARSER){
-        
         $parser = XML::LibXML->new();
-        
         $parser->recover(1);
         $parser->recover_silently(1);
         $parser->keep_blanks(1);
         $parser->expand_entities(1);
         $parser->no_network(1);
-        
         local $XML::LibXML::skipXMLDeclaration = 1;
         local $XML::LibXML::skipDTD = 1;
         local $XML::LibXML::setTagCompression = 1;
-        ##
         $PARSER = $parser;
-    }
-    
-    else {
+    } else {
         $parser = $PARSER;
     }
     
     if ($string){
-        #this is a url get content
         if ($string =~ /^http/){
             $string = $class->get($string);
-        }
-        
-        ####shoud we parse css for style selectors?!
-        
-        if ($string =~ /^<\?xml/) {
+        } elsif ($string =~ /^<\?xml/) {
             $doc = $parser->parse_string($string);
-        }
-        
-        else {
+        } else {
             $doc = $parser->parse_html_string($string);
         }
-        
         $DOC = $doc;
-        
     }
     
+    ##store document to
     ##keep an eye in case of multiple documents
-    my $self = {
+    return bless({
         document => $doc
-    };
-    
-    return bless($self, __PACKAGE__);
+    }, __PACKAGE__);
 }
 
 
@@ -91,9 +71,7 @@ sub jquery {
         $this->{document} = $selector->{document};
         $selector = $context;
         $context = shift;
-    }
-    
-    else {
+    } else {
         $this->{document} = $DOC;
     }
     
@@ -120,22 +98,14 @@ sub jquery {
         
         if ($selector->isa('ARRAY')){
             $nodes = $selector;
-        }
-        
-        else {
+        } else {
             $nodes = [$selector];
         }
-    }
-    
-    elsif ( ref ($selector) eq 'ARRAY' ){
+    } elsif ( ref ($selector) eq 'ARRAY' ){
         $nodes = $selector;
-    }
-    
-    elsif ($this->is_HTML($selector)) {
+    } elsif ($this->is_HTML($selector)) {
         $nodes = $this->createNode($selector);
-    }
-    
-    else {
+    } else {
         $nodes = $this->_find($selector);
         ##another try to create html fragment
         if (!$nodes->[0]){
@@ -144,7 +114,6 @@ sub jquery {
     }
     
     return $this->pushStack(@$nodes);
-    
 }
 
 ##something like pushStack in jquery
@@ -165,7 +134,6 @@ sub pushStack {
     
     #$self = bless ([@elements], $obj_class);
     $self->{nodes} = \@elements;
-    
     return $self;
 }
 
@@ -176,13 +144,9 @@ sub toArray {
     
     if ($self->isa('ARRAY')) {
         @nodes = @{$self};
-    }
-    
-    elsif ($self->isa('HASH')) {
+    } elsif ($self->isa('HASH')) {
         @nodes = @{$self->{nodes}};
-    }
-    
-    else {
+    } else {
         @nodes = ($self);
     }
     
@@ -196,20 +160,13 @@ sub getNodes {
     my $self = shift;
     my @nodes;
     
-    #return @{$self->{nodes}};
-    
     if ($self->isa('ARRAY')) {
         @nodes = @{$self};
-    }
-    
-    elsif ($self->isa('HASH')) {
+    } elsif ($self->isa('HASH')) {
         @nodes = @{$self->{nodes}};
-    }
-    
-    else {
+    } else {
         @nodes = ($self);
     }
-    
     return wantarray ? @nodes : bless(\@nodes, $obj_class);
 }
 
@@ -262,16 +219,12 @@ sub _translate_css_to_xpath {
         
         #remove all leading and ending whitespaces
         $query =~ s/^\s+|\s+$//g;
-        
         $query =~ s/\s+/</g;
-        
         ##add one whitespace at the beginning
         $query = " ".$query;
         
         my $selector;
-        if ($old_query){
-            $selector = $old_query;
-        }
+        $selector = $old_query if $old_query;
         
         my $pos = 0;
         my $directpath = 0;
@@ -292,10 +245,9 @@ sub _translate_css_to_xpath {
             ##set empty starting path
             if ($custompath eq 'empty' && $pos2 eq '0'){
                 $path = '';
-            }
-            
-            ###if we want to search direct childrens
-            elsif ($directpath || $empty_path){
+                
+                ###if we want to search direct childrens
+            }   elsif ($directpath || $empty_path){
                 $path = '/';
                 $path = '//' if $directpath eq '2';
                 $path = '' if $empty_path;
@@ -309,20 +261,15 @@ sub _translate_css_to_xpath {
                 
                 ##reset empty path
                 $empty_path = 0;
-            }
-            
-            else {
+            }   else {
                 $path = '//';
             }
             
             $type =~ s/\s+//;
             $value =~ s/\s+//;
-            #$value =~ s/(\w+\*)//;
             
             if ($pos == 0){
-                
                 $path = $custompath if $custompath && $custompath ne 'empty';
-                
                 if (($type =~ /(\:|\.|\#)/ || $value =~ /\[.*?\]/)){
                     $selector .= $path.'*';
                 }
@@ -330,28 +277,18 @@ sub _translate_css_to_xpath {
             
             if ($value eq '*'){
                 $selector .= $path.'*';
-            }
-            
-            elsif ($value eq '>'){
+            } elsif ($value eq '>'){
                 $directpath = 1;
-            }
-            
-            elsif ($value eq '<'){
+            }   elsif ($value eq '<'){
                 $directpath = 2;
-            }
-            
-            elsif ($value eq '+'){
+            } elsif ($value eq '+'){
                 $selector .= '/following-sibling::';
                 $empty_path = 1;
                 $single = 1;
-            }
-            
-            elsif ($value eq '~'){
+            } elsif ($value eq '~'){
                 $selector .= '/following-sibling::';
                 $empty_path = 1;
-            }
-            
-            elsif ($value =~ /\[(.*?)\]/){
+            } elsif ($value =~ /\[(.*?)\]/){
                 
                 my ($name, $value) = split(/\s*=\s*/, $1, 2);
                 
@@ -363,49 +300,32 @@ sub _translate_css_to_xpath {
                     
                     if ($name =~ s/\^$//){
                         $selector .= "[starts-with (\@$name,'$value')]";
-                    }
-                    
-                    elsif ($name =~ s/\$$//){
+                    } elsif ($name =~ s/\$$//){
                         #$selector .= "[ends-with (\@$name,'$value')]";
                         $selector .= "[substring(\@$name, string-length(\@$name) - string-length('$value')+ 1, string-length(\@$name))= '$value']";
-                    }
-                    
-                    elsif ($name =~ s/\*$//){
+                    } elsif ($name =~ s/\*$//){
                         $selector .= "[contains (\@$name,'$value')]";
-                    }
-                    
-                    elsif ($name =~ s/\|$//){
+                    } elsif ($name =~ s/\|$//){
                         $selector .= "[\@$name ='$value'"." or "."starts-with(\@$name,'$value".'-'."')]";
-                    }
-                    
-                    else {
+                    } else {
                         $selector .= "[\@$name='$value']";
                     }
                     
-                }
-                
-                else {
+                } else {
                     $selector .= "[\@$name]";
                 }
                 
-            }
-            
             ##this is tag
-            elsif (!$type){
+            } elsif (!$type){
                 $selector .= $path.$value;
-            }
-            
-            ##class
-            elsif ($type eq "."){
-                #$selector .= '[@class="'.$value.'"]';
-                #$selector .= '[contains(@class,"'.$value.'")]';
+            ##this is class
+            } elsif ($type eq "."){
                 ##finally found a good solution from
                 ##http://plasmasturm.org/log/444/
                 $selector .= '[ contains(concat( " ", @class, " " ),concat( " ", "'.$value.'", " " )) ]';
-            }
-            
-            ##id
-            elsif ($type eq '#'){
+                
+            ##id selector
+            } elsif ($type eq '#'){
                 $selector .= '[@id="'.$value.'"]';
             }
             
@@ -414,113 +334,65 @@ sub _translate_css_to_xpath {
                 
                 if ($value eq "first-child"){
                     $selector .= '[1]';
-                }
-                
-                elsif ($value eq "first"){
-                    
+                } elsif ($value eq "first"){
                     #$selector = "getIndex($selector,'eq','0')";
                     $selector .= '[position() = 1]'; ##this doesn't really do the job exactly as jQuery
-                }
-                
-                ###select odd childs
-                elsif ($value eq "odd"){
+                } elsif ($value eq "odd"){
                     #$selector = 'getOdd('.$selector.')';
                     $selector .= '[position() mod 2 != 1]'; ##this doesn't do the job exactly as jQuery
-                }
-                
-                ###select even childs
-                elsif ($value eq "even"){
+                } elsif ($value eq "even"){
                     #$selector = 'getEven('.$selector.')';
                     $selector .= '[position() mod 2 != 0]'; ##this doesn't do the job exactly as jQuery
-                }
-                
-                elsif ($value =~ /(gt|lt|eq)\((.*?)\)/){
+                } elsif ($value =~ /(gt|lt|eq)\((.*?)\)/){
                     $selector = "getIndex($selector,'$1','$2')";
-                }
-                
-                elsif ($value =~ /nth-child\((.*?)\)/){
+                } elsif ($value =~ /nth-child\((.*?)\)/){
                     $selector .= "[position() = $1]";
-                }
-                
-                
-                elsif ($value =~ /has\((.*?)\)/){
+                } elsif ($value =~ /has\((.*?)\)/){
                     $selector = "getHas($selector,'$1')";
-                }
-                
-                elsif ($value =~ /not\((.*?)\)/){
+                } elsif ($value =~ /not\((.*?)\)/){
                     $selector = "getNot($selector,'$1')";
-                }
-                
-                elsif ($value eq "button"){
+                } elsif ($value eq "button"){
                     #$selector .= '[@type="button"]';
                     $selector = "getButton($selector)";
-                }
-                
-                elsif ($value =~ /(checkbox|file|hidden|image|text|submit|radio|password|reset)/){
+                } elsif ($value =~ /(checkbox|file|hidden|image|text|submit|radio|password|reset)/){
                     $selector .= "[\@type='$value']";
-                }
-                
-                elsif ($value eq "checked"){
+                } elsif ($value eq "checked"){
                     $selector .= '[@checked="checked"]';
-                }
-                
-                elsif ($value eq "selected"){
+                } elsif ($value eq "selected"){
                     $selector .= '[@selected="selected"]';
-                }
-                
-                elsif ($value eq "disabled"){
+                } elsif ($value eq "disabled"){
                     $selector .= '[@disabled]';
-                }
-                
-                elsif ($value eq "enabled"){
+                } elsif ($value eq "enabled"){
                     $selector .= '[not(@disabled)]';
-                }
-                
-                elsif ($value =~ /contains\((.*?)\)/){
+                } elsif ($value =~ /contains\((.*?)\)/){
                     my $str = $1;
                     for ($str) {
                         s/^['"]//;
                         s/['"]$//;
                     }
                     $selector .= "[contains(.,'$str')]";
-                }
-                
-                elsif ($value eq "empty"){
+                } elsif ($value eq "empty"){
                     $selector .= '[not(node())]';
-                }
-                
-                elsif ($value eq "only-child"){
+                } elsif ($value eq "only-child"){
                     
                     my ($str1, $str2) = $selector =~ /(.*)\/(.*)/;
-                    
                     if ($str1 =~ s/\/$//){
                         $str2 = '/'.$str2;
                         $selector = $str1.'//child::*/parent::*[count(*)=1]'.'/'.$str2;
-                    }
-                    
-                    else{
+                    } else{
                         $selector = $str1.'/child::*/parent::*[count(*)=1]'.'/'.$str2;
                     }
                     
-                }
-                
-                elsif ($value eq "header"){
+                } elsif ($value eq "header"){
                     $selector = "getHeaders($selector)";
-                }
-                
-                elsif ($value eq "parent"){
+                } elsif ($value eq "parent"){
                     $selector .= '[(node())]';
-                }
-                
-                elsif ($value eq "last"){
+                } elsif ($value eq "last"){
                     #$selector = "getLast($selector)";
                     $selector .= '[position()=last()]';
-                }
-                
-                elsif ($value eq "last-child"){
+                } elsif ($value eq "last-child"){
                     $selector .= "[last()]";
                 }
-                
             }
             
             $pos++; $pos2++;
@@ -545,13 +417,10 @@ sub as_HTML {
     
     my $doc = $self->document;
     if (ref($doc) eq 'XML::LibXML::Document' ){
-        
         my $html = $doc->serialize_html();
-        
         if ($html =~ m/<div class="REMOVE_THIS_ELEMENT">/g){
             $html =~ s/(?:.*?)<div class="REMOVE_THIS_ELEMENT">(.*)<\/div>(?:.*)/$1/s;
         }
-        
         return $html;
     }
     
@@ -564,17 +433,13 @@ sub as_XML {
     my $doc = $_[0]->document;
     
     if ($$DOC ne $$doc){
-        
         if (ref($doc) eq 'XML::LibXML::Document' ){
-            
             my $xml = $doc->serialize();
             if ($xml =~ m/<div class="REMOVE_THIS_ELEMENT">/g){
                 $xml =~ s/(?:.*?)<div class="REMOVE_THIS_ELEMENT">(.*)<\/div>(?:.*)/$1/s;
             }
-            
             return $xml;
         }
-        
         return $doc->getDocumentElement->html();
     }
     
@@ -583,9 +448,10 @@ sub as_XML {
 
 
 sub is_HTML {
-    
     my ($self,$html) = @_;
-    ### very permative solution but it seems to work with all tests so far
+    
+    ### very permative solution but it seems 
+    ### to work with all tests so far
     if ($html =~ /<.*>/g){
         return 1;
     }
@@ -602,8 +468,7 @@ sub createNode {
     $html = "<div class='REMOVE_THIS_ELEMENT'>".$html."</div>";
     if ($html =~ /^<div class='REMOVE_THIS_ELEMENT'><\?xml/) {
         $node = $PARSER->parse_string($html);
-    }
-    else{
+    } else{
         $node = $PARSER->parse_html_string($html);
     }
     
@@ -628,8 +493,7 @@ sub document {
     my $doc;
     if ($self->isa('ARRAY') && $self->[0]){
         $doc = $self->[0]->ownerDocument;
-    }
-    elsif ($self->isa('HASH') && $self->{document}){
+    } elsif ($self->isa('HASH') && $self->{document}){
         $doc = $self->{document};
     }
     return $doc ? $doc : $DOC;
@@ -649,14 +513,12 @@ sub parser { return shift->{parser}; }
 
 ###custom internal functions
 ###copied from jQuery.js
-sub body {
-    return shift->getElementsByTagName('body');
-}
+
+sub body { return shift->getElementsByTagName('body'); }
 
 sub makeArray {
     
     my ( $array, $results ) = @_;
-    
     my $ret = $results || [];
     
     if ( ref $array eq 'ARRAY' ) {
@@ -722,8 +584,6 @@ use base 'jQuery';
 
 ##hack Libxml modules to use jQuery as base module
 ##is this a bad practice?
-#package XML::LibXML::NodeList;
-#use base 'jQuery::Obj';
 package XML::LibXML::NodeList;
 use base 'jQuery::Obj';
 
