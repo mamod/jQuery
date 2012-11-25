@@ -20,8 +20,6 @@ sub new {
     
     my $class = shift;
     my $string = shift;
-    
-    
     my $parser;
     my $doc;
     
@@ -82,18 +80,15 @@ sub jquery {
         return jQuery($context)->find($selector);
     }
     
-    
     if ( ref($selector) eq $obj_class ){
         return $selector;
     }
     
     bless($this, $obj_class);
     $this->{nodes} = [];
-    
-    #return;
     return $this if !$selector;
-    
     my $nodes;
+    
     if ( ref($selector) =~ /XML::/i ){
         
         if ($selector->isa('ARRAY')){
@@ -112,7 +107,6 @@ sub jquery {
             $nodes = $this->createNode($selector);
         }
     }
-    
     return $this->pushStack(@$nodes);
 }
 
@@ -131,7 +125,6 @@ sub pushStack {
     
     #save old object
     $self->{prevObject} = $self->{nodes};
-    
     #$self = bless ([@elements], $obj_class);
     $self->{nodes} = \@elements;
     return $self;
@@ -410,8 +403,6 @@ sub _translate_css_to_xpath {
     return join(' | ',@args);
 }
 
-
-
 sub as_HTML {
     my $self = shift;
     
@@ -427,7 +418,6 @@ sub as_HTML {
     return $doc->getDocumentElement->html();
 }
 
-
 sub as_XML {
     
     my $doc = $_[0]->document;
@@ -442,14 +432,11 @@ sub as_XML {
         }
         return $doc->getDocumentElement->html();
     }
-    
     return $doc->serialize();
 }
 
-
 sub is_HTML {
     my ($self,$html) = @_;
-    
     ### very permative solution but it seems 
     ### to work with all tests so far
     if ($html =~ /<.*>/g){
@@ -499,8 +486,6 @@ sub document {
     return $doc ? $doc : $DOC;
 }
 
-
-
 sub cloneDOC {
     my $self = shift;
     my $clone = $self->document->cloneNode(1);
@@ -509,7 +494,6 @@ sub cloneDOC {
 
 sub decode_html { return decode_entities($_[1]); }
 sub parser { return shift->{parser}; }
-
 
 ###custom internal functions
 ###copied from jQuery.js
@@ -526,7 +510,6 @@ sub makeArray {
     }
     
     else { $ret = \@_; }
-    
     return wantarray
     ? @$ret
     : $ret;
@@ -549,7 +532,6 @@ sub merge {
     }
 
     $i = _length($first);
-
     return wantarray
     ? @$first
     : $first ;   

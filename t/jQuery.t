@@ -1,15 +1,53 @@
-# Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl jQuery.t'
+use Test::More 'no_plan';
 
-#########################
-
-# change 'tests => 1' to 'tests => last_test_to_print';
-
-use Test::More tests => 1;
+##using ## first test
 BEGIN { use_ok('jQuery') };
 
-#########################
+##more tests
+my $doc = qq~
+<!DOCTYPE html>
+<html>
+    <div>
+        <div></div>
+        <div class="test"></div>
+        <div></div>
+    </div>
+</html>
+~;
 
-# Insert your test code below, the Test::More module is use()ed here so read
-# its man page ( perldoc Test::More ) for help writing this test script.
+my $fragment = qq~
+    <div>
+        <div></div>
+        <div class="test"></div>
+        <span>this is a text</span>
+    </div>
+~;
+
+my $ooTest = sub {
+    my $j = jQuery->new($doc);
+    my $nodes = $j->jQuery('div');
+    $nodes->find('*:first');
+    if (scalar @{ $nodes->getNodes } == 1){
+        return 1;
+    }
+    return 0;
+};
+
+my $SimpleSelect = sub {
+    my $nn = jQuery($fragment)->find('div');
+    my @nodes = $nn->getNodes;
+    return 1 if  ( scalar @nodes == 2 );
+    return 0;
+};
+
+my $addClass = sub {
+    jQuery->new($fragment);
+    my $nn = jQuery('span')->addClass('testClass');
+    return $nn->hasClass('testClass');
+};
+
+ok( $ooTest->(), 'OO style test' );
+ok( $SimpleSelect->(), 'Simple Select Test' );
+ok( $addClass->(), 'Add Class Test' );
+
 

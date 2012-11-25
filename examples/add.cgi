@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 
-#   Example: A contrived example to show some complex functionality of map method. 
-#   You can check the same example at with javascript jQuery at
-#   http://api.jquery.com/map/
+#   Example: Adds more elements, created on the fly, to the set of matched elements.
+# example page http://api.jquery.com/add/
 
 use strict;
 use CGI;

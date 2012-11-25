@@ -5,16 +5,11 @@ use subs 'this';
 use warnings;
 use HTTP::Request::Common qw(POST GET);
 use LWP::UserAgent;
-
 our $VERSION = '0.006';
 
 my $base_class = 'jQuery';
 my $obj_class = 'jQuery::Obj';
 my $element_class = 'XML::LibXML::Element';
-
-=head1 Methods
-
-=cut
 sub jQuery { return jQuery::jQuery(@_) }
 
 #internal sub
@@ -31,7 +26,6 @@ sub editElement {
         }
         $element->GetSetAttr($attr,$new);
     }
-    
     return $self;
 }
 
@@ -53,7 +47,6 @@ sub GetSetAttr {
 sub attr {
     
     my ($self,$attr,$value) = @_;
-    
     if (ref($attr) eq 'HASH'){
         while (my ($key,$val) = each(%{$attr})) {
             $self->editElement($key,$val,'remove old');
@@ -84,12 +77,10 @@ sub attr {
     }
 }
 
-
 #tested
 sub removeAttr {
     my $self = shift;
     my $attr = shift;
-    
     foreach my $element ($self->toArray){
         $element->removeAttribute( $attr );
     }
@@ -98,10 +89,8 @@ sub removeAttr {
 
 #tested
 sub addClass {
-    
     my ($self,$new_class) = @_;
     if (ref($new_class) eq 'CODE'){
-        
         $self->each(sub{
             my $i = shift;
             my $node = shift;
@@ -142,7 +131,6 @@ sub removeClass {
                     push @new,$cur_class;
                 } 
             }
-            
             my $new = join(' ',@new);
             $element->GetSetAttr('class',$new);
         }
@@ -165,18 +153,15 @@ sub toggleClass {
     
     my $type = defined $value ? 1 : 0;
     my $isBool = defined $stateVal ? 1 : 0;
-    
     return $this->each( sub {
 	
         my $i = shift;
         my $ele = shift;
         if ( $type ) {
-            
             #toggle individual class names
 	    my $className;
 	    my $state = $stateVal;
 	    my @classNames = split (/ /, $value);
-	    
             foreach my $className ( @classNames ) {
 		#check each className given, space seperated list
 		$state = $isBool ? $state : !$ele->hasClass($className);
@@ -221,10 +206,8 @@ sub val(){
     if (@_ == 2){
         my $i;
         foreach my $element ($self->getNodes){
-            
             $content = &$content($element,$i++,$element->val()) if ref($content) eq 'CODE';
             if ($element->nodeName eq "input" || $element->nodeName eq "select"){
-                
                 if ($element->exists('self::*[@type="text"]')){
                     $content = join(', ',@{$content}) if ref($content) eq 'ARRAY';
                     $element->GetSetAttr('value',$content);
@@ -276,11 +259,9 @@ sub val(){
                 } else {
                     return $node->findnodes('./option[@selected]')->string_value() || $node->findnodes('./option[1]')->string_value();
                 }
-                
             }
         }
     }
-    
 }
 
 sub id {
@@ -374,7 +355,7 @@ my $data = {};
 sub data {
     my $element = shift;
     my ($self,$name,$value) = @_;
-    if (ref $element =~ /jQuery/){
+    if (ref $element =~ /$base_class/){
         $element = $self;
     } if ($value){
         $data->{$$element}->{$name} = $value;
@@ -521,7 +502,6 @@ sub text {
 	return $self->each( sub {
             my $i = shift;
             my $ele = shift;
-	    #var self = jQuery( this );
 	    $ele->text( &$text($i, $ele->text() ) );
 	});
     }
@@ -600,12 +580,10 @@ sub prependTo { return $_[0]->_pendTo($_[1],'prependTo'); }
 
 sub _pendTo {
     my ($self,$content,$method) = @_;
-    
     my @elements = $self->toArray;
     my @target;
     my @nodes = jQuery($content)->toArray;
     my @new;
-    
     foreach my $node (@nodes){
         @elements = reverse(@elements) if $method eq 'prependTo';
         foreach my $ele (@elements){
@@ -615,12 +593,10 @@ sub _pendTo {
             $node->insertBefore($copy,$node->firstChild()) if $method eq 'prependTo';
         }
     }
-    
     ##remove original
     foreach my $ele2 (@elements){
         $ele2->unbindNode();
     }
-    
     return $self->pushStack(@new);
 }
 
@@ -635,7 +611,6 @@ sub add {
 
 sub add2 {
     my ( $self, $selector, $context ) = @_;
-    
     my @set = !ref $selector ?
 	jQuery( $selector, $context )->toArray :
 	jQuery::makeArray( $selector && $selector->nodeType ? [ $selector ] : $selector )->toArray;
@@ -675,7 +650,6 @@ sub siblings { return $_[0]->_next($_[1],'siblings'); }
 
 
 sub _next {
-    
     my $self = shift;
     my ($selector,$filter,$type);
     if (@_ == 3){
@@ -691,7 +665,6 @@ sub _next {
     my @nodes = $self->toArray;
     my @elements;
     my @self;
-    
     my $sibling = {
         next=>'following-sibling::*[1]',
         nextAll=>'following-sibling::*',
@@ -707,7 +680,6 @@ sub _next {
     
     my @qr;
     my @self_qr;
-    
     foreach my $node (@nodes){
         my $path = $node->nodePath;
         foreach my $p (split(/\|/,$sibling->{$type})){
@@ -718,10 +690,8 @@ sub _next {
     
     my $query = join(' | ',@qr);
     my $self_query = join(' | ',@self_qr);
-    
     @elements = $self->document->findnodes($query);
     @self = $self->document->findnodes($self_query);
-    
     
     ##from w3 - http://www.w3.org/TR/xpath/#predicates
     ##the ancestor, ancestor-or-self, preceding, and preceding-sibling axes are reverse axes; 
@@ -732,7 +702,6 @@ sub _next {
     }
     
     if ($selector){
-        
         if ($type =~ /Until/){
             my @filter = jQuery($selector,$self->document)->toArray;
             ##get until element
@@ -746,16 +715,13 @@ sub _next {
                 }
                 push (@new_elements,$ele) if $do == 1;
             }
-            
             if ($type eq 'prevUntil' || $type eq 'parentsUntil'){ @elements = reverse @new_elements; }
             else{ @elements = @new_elements; }
-            
             return $self->pushStack(@elements)->filter($filter) if $filter;
         } else {
             return $self->pushStack(@elements)->filter($selector);
         }
     }
-    
     return $self->pushStack(@elements);
 }
 
@@ -767,7 +733,6 @@ sub children {
 }
 
 sub closest {
-    
     my $self = shift;
     my $selector = shift;
     my $context = shift || $self->document;
@@ -802,7 +767,6 @@ sub end {
     my $self = shift;
     return $self->pushStack( $self->prevObject() );
 }
-
 
 sub eq {
     my $self = shift;
@@ -841,7 +805,6 @@ sub has {
     return $self->pushStack(@nodes);
 }
 
-
 sub contains {
     my $self = shift;
     my $container = shift;
@@ -863,8 +826,6 @@ sub is {
     return $selector && $self->filter($selector)->length > 0;
 }
 
-
-
 sub not  {
     my $self = shift;
     my $content = shift;
@@ -872,7 +833,6 @@ sub not  {
 }
 
 sub slice  {
-    
     my ($self,$start,$end) = @_;
     my @nodes = $self->getNodes();
     my @elements;
@@ -884,8 +844,6 @@ sub slice  {
     return $self->pushStack(@elements);
 }
 
-
-
 ######DOM Insertion, Around........ warp(), unrap(), wrapall(), wrapinner()
 ##couldn't figure out how to do this my self so I copied it from jquery.js :P
 sub replaceWith {
@@ -894,7 +852,6 @@ sub replaceWith {
     my $value = $selector;
     
     #return $selector;
-    
     my $nodes = jQuery($selector);
     if ( ref $selector eq 'CODE' ) {
 	return $self->each( sub {
@@ -921,9 +878,7 @@ sub replaceWith {
     },'nopush');
 }
 
-
 sub wrap {
-    
     my $self = shift;
     my $selector = shift;
     return $self->each( sub {
@@ -933,7 +888,6 @@ sub wrap {
     });
     #return $self->pushStack(@m);
 }
-
 
 sub unwrap {
     my $self = shift;
@@ -948,11 +902,8 @@ sub unwrap {
     },'nopush')->end();
 }
 
-
 sub wrapInner {
     my ( $this,$html ) = @_;
-    
-    
     if ( ref $html eq 'CODE' ) {
 	return $this->each(sub{
             my $i = shift;
@@ -973,13 +924,10 @@ sub wrapInner {
     });
 }
 
-
 #I think mine is better than the real jQuery one :P
 sub wrapAll {
-    
     my $self = shift;
     my $content = shift;
-    
     ##create new node
     my $ele;
     my $return;
@@ -988,11 +936,9 @@ sub wrapAll {
     my $parent_node;
     my @nodes = $self->getNodes;
     my $append = jQuery($content);
-    
     if (!$append){
         return $self;
-    }
-    if (ref $content eq 'CODE' ) {
+    } if (ref $content eq 'CODE' ) {
 	return $self->each( sub {
             my $i = shift;
             my $this = shift;
@@ -1004,7 +950,6 @@ sub wrapAll {
     $parent_node = $clone[0];
     $to_append = $parent_node->findnodes('descendant-or-self::*[last()]')->[0];
     if (!$to_append){ return $self; }
-    
     my @new_nodes;
     foreach my $node (@nodes){
         my $old_node = $node->cloneNode('1');
@@ -1026,7 +971,6 @@ sub insertBefore {return $_[0]->_beforeAfter($_[1],'insertBefore');}
 sub insertAfter {return $_[0]->_beforeAfter($_[1],'insertAfter');}
 
 sub _beforeAfter {
-    
     my ($this,$html,$insert_type) = @_;
     $insert_type ||= 'after';
     return $this if !$html;
@@ -1044,7 +988,6 @@ sub _beforeAfter {
     
     my $self;
     my @m;
-    
     my $action = {
         after => 'insertAfter',
         before => 'insertBefore',
@@ -1061,14 +1004,11 @@ sub _beforeAfter {
     };
     
     my $insert = $action->{$insert_type};
-    
     if (ref $insert eq 'CODE'){
         $insert = $insert->();
     } else {
         $self = jQuery( $html );
     }
-    
-    
     
     foreach my $node (@{$this->toArray}){
         my @nd = $self->clone('1');
@@ -1078,22 +1018,18 @@ sub _beforeAfter {
             $node->parentNode->$insert($nd,$node);
         }
     };
-    
     #remove previous cloned object
     $self->remove();
     return $this->pushStack(@m);
 }
-
 
 sub getNode {
     my ($this,$num) = @_;
     return $this->toArray->[$num];
 }
 
-
 sub clone {
     my ($self,) = @_;
-
     my @cloned;
     my @nodes = $self->getNodes;
     return bless([], $base_class) if !@nodes;
@@ -1109,8 +1045,6 @@ sub clone {
     : $self->pushStack(@cloned);
 
 }
-
-
 
 ###load, post, get functions
 ### FIXME - should rewrite this!!!
@@ -1140,18 +1074,15 @@ sub get {
     });
 }
 
-
-
 sub post {
-    
     my ( $self, $url, $data, $callback, $type ) = @_;
-    
     #shift arguments if data argument was omited
     if ( ref( $data ) eq 'CODE' ) {
 	$type = $type || $callback;
 	$callback = $data;
 	$data = undef;
     }
+    
     return $self->ajax({
 	type => "POST",
 	url => $url,
@@ -1200,7 +1131,6 @@ sub ajax {
     ##send request
     my $response = $ua->request($req);
     my $content = $response->content;
-    
     ###excute success function
     if ($success){
         #my @arg = ($content);

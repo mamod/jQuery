@@ -1,9 +1,5 @@
 #!/usr/bin/perl
 
-#   Example: A contrived example to show some complex functionality of map method. 
-#   You can check the same example at with javascript jQuery at
-#   http://api.jquery.com/map/
-
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
@@ -18,16 +14,11 @@ jQuery->new($html);
 
 jQuery("div")->html('<b>Wow!</b> Such excitement...');
 
-
 jQuery("div b")
 ->append(jQuery->document->createTextNode("!!!"))
 ->css("color", "red");
 
-
-    
 print jQuery->as_HTML;
-
-
 
 
 __DATA__

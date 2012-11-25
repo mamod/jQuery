@@ -5,7 +5,6 @@ jQuery - complete jQuery port to Perl
 =head1 SYNOPSIS
   
     ##OOP style
-    
     use jQuery;
     my $j = jQuery->new('http://someurl.com');
     
@@ -34,23 +33,21 @@ jQuery - complete jQuery port to Perl
   
 =head1 DESCRIPTION
 
-I love Perl and I also love jQuery so this is my attempt to completely port jQuery
-to Perl, or at least things that work on the server side, like selecting, parsing, and manipulating
-HTML DOM.
+This is another attempt to port jQuery to Perl "the DOM part and what ever could be run on the server side NOT client side"
+
+To create this module I went through jQuery.js and some times literally translated javascript functions to their perl equivalent, which made
+my job way easier than thinking of how and why I can do this or that. of course some other times I had to roll my own hacks :)
 
 =head2 How this differ from other Perl jQuery modules?
 
-Well, first I wrote this module long time ago, maybe long before any other jQuery
-modules but didn't publish it until now since I wasn't sure "and still" about it's performance
-or code quality, even though I used it in a couple of commercial projects I still need
-more tests, I publish it now because I need a motive and help to continue this project
+First, I wrote this long time ago, I wasn't sure if there were any jQuery modules then
+or maybe I didn't search CPAN well, then later I found pQuery which is nice, clean and written by
+Ingy döt Net
 
-=head2 Main differences "as I think"
+=head2 Here are some differences
 
     * it uses XML::LibXML as it's parsing engine
-    
-    * Very much like jQuery.js, if you ever used jQuery.js you will be familiar with this module too
-    
+    * Work just like jQuery.js. Translate jQuery.js by simply replace . with -> "with some minor twists"
     * Almost all jQuery DOM functions are supported
 
 =head1 jQuery
@@ -73,6 +70,45 @@ Method for matching a set of elements in a document
 
 =cut
 
+=head1 this Method
+
+this method in loop represents current selected node
+
+    jQuery('div')->each(sub{
+        this->addClass('hola');
+    });
+    
+
+=head1 Caveats
+
+When dealing with multiple HTML document at once always use OO style
+    
+    my $j1 = jQuery->new($html1);
+    my $j2 = jQuery->new($html2);
+    
+    ##then
+    
+    $j1->jQuery('div')->find('..')->addClass('..');
+    my $nodes = $j2->('div');
+    $nodes->find('span')->css('border','1px solid red');
+    
+    print $j1->as_HTML();
+    print $j2->as_HTML();
+
+This way, different documents will never overlap, you may use the non OO style but you need to be careful then
+
+    jQuery->new($html1);
+    jQuery('div')->find('..')->addClass('..');
+    jQuery->as_HTML;
+    
+    ##always use a new constructure when switching documents
+    ##the previous will be lost
+    jQuery->new($html2);
+    my $nodes = jQuery('div');
+    $nodes->find('..')->css('border','1px solid red');
+    jQuery->as_HTML;
+    
+    
 =head1 Dependencies
 
     * XML::LibXML 1.70 and later
@@ -96,6 +132,8 @@ See jQuery::Functions
 =head1 Examples
 
 Please see the included examples folder for more on how to use and supported functions
+All examples have been copied directly from jQuery document web site
+you can see their equivalent in jQuery api section at http://api.jquery.com/
 
 =head1 AUTHOR
 

@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-
-
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);

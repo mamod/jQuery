@@ -1,8 +1,6 @@
 #!/usr/bin/perl
 
-#   Example: A contrived example to show some complex functionality of map method. 
-#   You can check the same example at with javascript jQuery at
-#   http://api.jquery.com/map/
+#   Example: prevUntil
 
 use strict;
 use CGI;
@@ -15,7 +13,6 @@ print $cgi->header();
 
 
 jQuery->new($html);
-#jQuery("div:first")->nextAll()->addClass("after");
 
 jQuery("#term-2")->prevUntil("dt")
   ->css("background-color", "red");

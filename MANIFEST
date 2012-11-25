@@ -6,7 +6,7 @@ t/jQuery.t
 lib/jQuery.pm
 lib/jQuery/Functions.pm
 examples/add.cgi
-examples/addClass.cgi
+examples/removeClass.cgi
 examples/andSelf.cgi
 examples/attr.cgi
 examples/Children.cgi
