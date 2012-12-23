@@ -6,23 +6,17 @@ use XML::LibXML 1.70;
 use HTML::Entities;
 use Encode;
 use Carp;
-
 use base qw/jQuery::Functions Exporter/;
 our @EXPORT = qw(jquery jQuery this);
-
 use vars qw/$DOC $PARSER $VERSION/;
 $VERSION = '0.006';
-
 my $obj_class = 'jQuery::Obj';
 sub this { 'jQuery::Functions'->this(@_) }
 
 sub new {
-    
     my $class = shift;
     my $string = shift;
-    my $parser;
-    my $doc;
-    
+    my ($parser,$doc);
     if (!$PARSER){
         $parser = XML::LibXML->new();
         $parser->recover(1);
@@ -48,7 +42,6 @@ sub new {
         }
         $DOC = $doc;
     }
-    
     ##store document to
     ##keep an eye in case of multiple documents
     return bless({
@@ -56,15 +49,10 @@ sub new {
     }, __PACKAGE__);
 }
 
-
 *jQuery = \&jquery;
 sub jquery {
-    
     my ($selector, $context) = (shift,shift);
-    
-    my $this;
-    my $c;
-    
+    my ($this,$c);
     if ( ref ($selector) eq __PACKAGE__ ){
         $this->{document} = $selector->{document};
         $selector = $context;
@@ -88,9 +76,7 @@ sub jquery {
     $this->{nodes} = [];
     return $this if !$selector;
     my $nodes;
-    
     if ( ref($selector) =~ /XML::/i ){
-        
         if ($selector->isa('ARRAY')){
             $nodes = $selector;
         } else {
@@ -112,7 +98,6 @@ sub jquery {
 
 ##something like pushStack in jquery
 sub pushStack {
-    
     my $self = shift;
     my @elements;
     
@@ -131,7 +116,6 @@ sub pushStack {
 }
 
 sub toArray {
-    
     my $self = shift;
     my @nodes;
     
@@ -149,10 +133,8 @@ sub toArray {
 }
 
 sub getNodes {
-    
     my $self = shift;
     my @nodes;
-    
     if ($self->isa('ARRAY')) {
         @nodes = @{$self};
     } elsif ($self->isa('HASH')) {
@@ -162,7 +144,6 @@ sub getNodes {
     }
     return wantarray ? @nodes : bless(\@nodes, $obj_class);
 }
-
 
 sub _find {
     my ($this, $selector, $context ) = @_;
@@ -185,8 +166,6 @@ sub _find {
     ? @nodes
     : \@nodes;
 }
-
-
 
 #Should I use HTML::Selector::XPath and port some jquery selectors by hand ??
 #it's well maintained
@@ -387,7 +366,6 @@ sub _translate_css_to_xpath {
                     $selector .= "[last()]";
                 }
             }
-            
             $pos++; $pos2++;
         }
         
@@ -414,14 +392,11 @@ sub as_HTML {
         }
         return $html;
     }
-    
     return $doc->getDocumentElement->html();
 }
 
 sub as_XML {
-    
     my $doc = $_[0]->document;
-    
     if ($$DOC ne $$doc){
         if (ref($doc) eq 'XML::LibXML::Document' ){
             my $xml = $doc->serialize();
@@ -446,36 +421,23 @@ sub is_HTML {
 }
 
 sub createNode {
-    
     my ($self,$html) = @_;
     my $node;
-    
     if (!$PARSER){ $self->new(); }
-    
     $html = "<div class='REMOVE_THIS_ELEMENT'>".$html."</div>";
     if ($html =~ /^<div class='REMOVE_THIS_ELEMENT'><\?xml/) {
         $node = $PARSER->parse_string($html);
     } else{
         $node = $PARSER->parse_html_string($html);
     }
-    
     $DOC = $node if !$DOC;
     $node->removeInternalSubset;
     my $nodes = $node->getDocumentElement->findnodes("//*[\@class='REMOVE_THIS_ELEMENT']")->[0]->childNodes;
     return $nodes;
 }
 
-
-sub createNode2 {
-    my ($self,$html) = @_;
-    $html = "<div class='REMOVE_THIS_ELEMENT'>".$html."</div>";
-    my $new = $self->new($html);
-    return $new->jQuery('.REMOVE_THIS_ELEMENT *');
-}
-
 ##detect node parent document
 sub document {
-
     my $self = shift;
     my $doc;
     if ($self->isa('ARRAY') && $self->[0]){
@@ -497,19 +459,15 @@ sub parser { return shift->{parser}; }
 
 ###custom internal functions
 ###copied from jQuery.js
-
 sub body { return shift->getElementsByTagName('body'); }
 
 sub makeArray {
-    
     my ( $array, $results ) = @_;
     my $ret = $results || [];
     
     if ( ref $array eq 'ARRAY' ) {
 	push @{$ret}, @{$array};
-    }
-    
-    else { $ret = \@_; }
+    } else { $ret = \@_; }
     return wantarray
     ? @$ret
     : $ret;
@@ -555,7 +513,6 @@ sub unique {
     return @ele;
 }
 
-
 sub nodeName  {
     my ( $elem, $name ) = @_;
     return $elem->nodeName && uc $elem->nodeName eq uc $name;
@@ -565,7 +522,6 @@ package jQuery::Obj;
 use base 'jQuery';
 
 ##hack Libxml modules to use jQuery as base module
-##is this a bad practice?
 package XML::LibXML::NodeList;
 use base 'jQuery::Obj';
 
@@ -590,7 +546,6 @@ jQuery - complete jQuery port to Perl
 =head1 SYNOPSIS
   
     ##OOP style
-    
     use jQuery;
     my $j = jQuery->new('http://someurl.com');
     
@@ -619,23 +574,21 @@ jQuery - complete jQuery port to Perl
   
 =head1 DESCRIPTION
 
-I love Perl and I also love jQuery so this is my attempt to completely port jQuery
-to Perl, or at least things that work on the server side, like selecting, parsing, and manipulating
-HTML DOM.
+This is another attempt to port jQuery to Perl "the DOM part and what ever could be run on the server side NOT client side"
+
+To create this module I went through jQuery.js and some times literally translated javascript functions to their perl equivalent, which made
+my job way easier than thinking of how and why I can do this or that. of course some other times I had to roll my own hacks :)
 
 =head2 How this differ from other Perl jQuery modules?
 
-Well, first I wrote this module long time ago, maybe long before any other jQuery
-modules but didn't publish it until now since I wasn't sure "and still" about it's performance
-or code quality, even though I used it in a couple of commercial projects I still need
-more tests, I publish it now because I need a motive and help to continue this project
+First, I wrote this long time ago, I wasn't sure if there were any jQuery modules then
+or maybe I didn't search CPAN well, then later I found pQuery which is nice, clean and written by
+Ingy döt Net
 
-=head2 Main differences "as I think"
+=head2 Here are some differences
 
     * it uses XML::LibXML as it's parsing engine
-    
-    * Very much like jQuery.js, if you ever used jQuery.js you will be familiar with this module too
-    
+    * Work just like jQuery.js. Translate jQuery.js by simply replace . with -> "with some minor twists"
     * Almost all jQuery DOM functions are supported
 
 =head1 jQuery
@@ -658,19 +611,70 @@ Method for matching a set of elements in a document
 
 =cut
 
+=head1 this Method
+
+this method in loop represents current selected node
+
+    jQuery('div')->each(sub{
+        this->addClass('hola');
+    });
+    
+
+=head1 Caveats
+
+When dealing with multiple HTML document at once always use OO style
+    
+    my $j1 = jQuery->new($html1);
+    my $j2 = jQuery->new($html2);
+    
+    ##then
+    
+    $j1->jQuery('div')->find('..')->addClass('..');
+    my $nodes = $j2->('div');
+    $nodes->find('span')->css('border','1px solid red');
+    
+    print $j1->as_HTML();
+    print $j2->as_HTML();
+
+This way, different documents will never overlap, you may use the non OO style but you need to be careful then
+
+    jQuery->new($html1);
+    jQuery('div')->find('..')->addClass('..');
+    jQuery->as_HTML;
+    
+    ##always use a new constructure when switching documents
+    ##the previous will be lost
+    jQuery->new($html2);
+    my $nodes = jQuery('div');
+    $nodes->find('..')->css('border','1px solid red');
+    jQuery->as_HTML;
+    
+    
 =head1 Dependencies
 
     * XML::LibXML 1.70 and later
     * LWP::UserAgent
     * HTML::Entities
+    * HTTP::Request::Common
+
+=head1 INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
 
 =head1 Methods
 
-See jQuery::Functions documents
+See jQuery::Functions
 
 =head1 Examples
 
 Please see the included examples folder for more on how to use and supported functions
+All examples have been copied directly from jQuery document web site
+you can see their equivalent in jQuery api section at http://api.jquery.com/
 
 =head1 AUTHOR
 
@@ -683,7 +687,4 @@ Copyright (C) 2012 by Mamod A. Mehyar
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.1 or,
 at your option, any later version of Perl 5 you may have available.
-
-=cut
-
 

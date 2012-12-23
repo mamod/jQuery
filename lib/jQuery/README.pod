@@ -1,6 +1,5 @@
 =head1 Methods
 
-
 =head2 attr
 
 =over 4
@@ -22,22 +21,15 @@ map: A hash ref of attribute-value pairs to set.
 
 =back
 
-
-Check jQuery API
-
-http://api.jquery.com/attr/
+Check jQuery API - L<http://api.jquery.com/attr/>
 
 =cut
-
 
 =head2 removeAttr
 
 Remove an attribute from each element in the set of matched elements.
 
-Check jQuery API
-
-http://api.jquery.com/removeAttr/
-
+Check jQuery API - L<http://api.jquery.com/removeAttr/>
 
 =head2 addClass
 
@@ -58,12 +50,9 @@ as arguments.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/addClass/
+Check jQuery API L<http://api.jquery.com/addClass/>
 
 =cut
-
 
 =head2 removeClass
 
@@ -85,9 +74,7 @@ as arguments.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/removeClass/
+Check jQuery API - L<http://api.jquery.com/removeClass/>
 
 =cut
 
@@ -122,9 +109,7 @@ switch: A boolean value to determine whether the class should be added or remove
     
 =back
 
-Check jQuery API
-
-L<http://api.jquery.com/toggleClass/>
+Check jQuery API - L<http://api.jquery.com/toggleClass/>
 
 =cut
 
@@ -141,9 +126,7 @@ String: The class name to search for.
 
 =back
 
-Check jQuery API
-
-http://api.jquery.com/hasClass/
+Check jQuery API - L<http://api.jquery.com/hasClass/>
 
 =cut
 
@@ -168,9 +151,7 @@ A function returning the value to set.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/val/
+Check jQuery API - L<http://api.jquery.com/val/>
 
 =cut
 
@@ -191,9 +172,7 @@ filtered by a selector.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/find/
+Check jQuery API - L<http://api.jquery.com/find/>
 
 =cut
 
@@ -235,12 +214,9 @@ value : The new data value.
 
 =back
 
-Check jQuery API
-
-http://api.jquery.com/jQuery.data/
+Check jQuery API - L<http://api.jquery.com/jQuery.data/>
 
 =cut
-
 
 =head2 filter
 
@@ -258,17 +234,13 @@ Reduce the set of matched elements to those that match the selector or pass the 
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/filter/
+Check jQuery API - L<http://api.jquery.com/filter/>
 
 =cut
 
 =head2 map
 
-Translate all items in an array or object to new array of items.
-
-http://api.jquery.com/jQuery.map/
+Translate all items in an array or object to new array of items. - L<http://api.jquery.com/jQuery.map/>
 
 =cut
 
@@ -296,9 +268,7 @@ same as jQuery .html( function(index, oldhtml) )
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/html/
+Check jQuery API - L<http://api.jquery.com/html/>
 
 =cut
 
@@ -324,9 +294,7 @@ same as jQuery .text( function(index, oldtext) )
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/html/
+Check jQuery API - L<http://api.jquery.com/html/>
 
 =cut
 
@@ -352,9 +320,7 @@ same as jQuery .append( function(index, html) )
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/append/
+Check jQuery API - L<http://api.jquery.com/append/>
 
 =cut
 
@@ -380,9 +346,7 @@ same as jQuery .prepend( function(index, html) ) function
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/prepend/
+Check jQuery API - L<http://api.jquery.com/prepend/>
 
 =cut
 
@@ -399,7 +363,7 @@ elements will be inserted at the end of the element(s) specified by this paramet
     
 =back
 
-Check jQuery API http://api.jquery.com/appendTo/
+Check jQuery API - L<http://api.jquery.com/appendTo/>
 
 =cut
 
@@ -418,9 +382,7 @@ parameter.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/prependTo/
+Check jQuery API - L<http://api.jquery.com/prependTo/>
 
 =cut
 
@@ -452,9 +414,7 @@ html: An HTML fragment to add to the set of matched elements.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/add/
+Check jQuery API - L<http://api.jquery.com/add/>
 
 =cut
 
@@ -462,9 +422,7 @@ http://api.jquery.com/add/
 
 Add the previous set of elements on the stack to the current set.
 
-Check jQuery API
-
-http://api.jquery.com/andSelf/
+Check jQuery API - L<http://api.jquery.com/andSelf/>
 
 =cut
 
@@ -480,7 +438,7 @@ matches that selector.
     
 =back
 
-Check jQuery API http://api.jquery.com/next/
+Check jQuery API - L<http://api.jquery.com/next/>
 
 =head2 nextAll
 
@@ -493,7 +451,7 @@ optionally filtered by a selector.
     
 =back
 
-Check jQuery API http://api.jquery.com/nextAll/
+Check jQuery API - L<http://api.jquery.com/nextAll/>
 
 =head2 nextUntil
 
@@ -506,7 +464,7 @@ matched by the selector.
     
 =back
 
-Check jQuery API http://api.jquery.com/nextUntil/
+Check jQuery API - L<http://api.jquery.com/nextUntil/>
 
 =head2 parent
 
@@ -519,7 +477,7 @@ filtered by a selector.
     
 =back
 
-Check jQuery API http://api.jquery.com/parent/
+Check jQuery API - L<http://api.jquery.com/parent/>
 
 
 =cut
@@ -535,9 +493,7 @@ filtered by a selector.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/children/
+Check jQuery API - L<http://api.jquery.com/children/>
 
 =cut
 
@@ -554,9 +510,7 @@ current element and progressing up through the DOM tree.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/closest/
+Check jQuery API - L<http://api.jquery.com/closest/>
 
 =cut
 
@@ -571,9 +525,7 @@ and comment nodes.
     
 =back
 
-Check jQuery API
-
-<L:http://api.jquery.com/contents/>
+Check jQuery API - L<http://api.jquery.com/contents/>
 
 =cut
 
@@ -588,9 +540,7 @@ return the set of matched elements to its previous state.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/end/
+Check jQuery API - L<http://api.jquery.com/end/>
 
 =cut
 
@@ -606,9 +556,7 @@ Reduce the set of matched elements to the one at the specified index.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/eq/
+Check jQuery API - L<http://api.jquery.com/eq/>
 
 =cut
 
@@ -622,9 +570,7 @@ Reduce the set of matched elements to the first in the set.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/first/
+Check jQuery API - L<http://api.jquery.com/first/>
 
 =cut
 
@@ -632,9 +578,7 @@ http://api.jquery.com/first/
 
 Reduce the set of matched elements to the final one in the set.
 
-Check jQuery API
-
-http://api.jquery.com/last/
+Check jQuery API - L<http://api.jquery.com/last/>
 
 =cut
 
@@ -651,9 +595,7 @@ the selector or DOM element.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/has/
+Check jQuery API - L<http://api.jquery.com/has/>
 
 =cut
 
@@ -672,9 +614,7 @@ and return true if at least one of these elements matches the selector.
     
 =back
 
-Check jQuery API
-
-http://api.jquery.com/is/
+Check jQuery API - L<http://api.jquery.com/is/>
 
 =cut
 
@@ -694,7 +634,7 @@ Remove elements from the set of matched elements.
     
 =back
 
-Check jQuery API http://api.jquery.com/not/
+Check jQuery API - L<http://api.jquery.com/not/>
 
 =cut
 
