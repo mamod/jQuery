@@ -118,7 +118,6 @@ sub pushStack {
 sub toArray {
     my $self = shift;
     my @nodes;
-    
     if ($self->isa('ARRAY')) {
         @nodes = @{$self};
     } elsif ($self->isa('HASH')) {
@@ -147,10 +146,8 @@ sub getNodes {
 
 sub _find {
     my ($this, $selector, $context ) = @_;
-    
     $context ||= $this->document;
     my @nodes;
-    
     eval {
         if ($selector !~ m/\//){
             $selector = $this->_translate_css_to_xpath($selector,$context->nodePath);
@@ -181,23 +178,17 @@ sub _translate_css_to_xpath {
     $start_query =~ s/\((.*?),(.*?)\)/\($1<COMMA>$2\)/g;
     my @queries = split(/\,/,$start_query);
     
-    
     my $this_query = 0;
-
-    
     foreach my $query (@queries){
         
         $query =~ s/<COMMA>/,/g;
-        
         #remove all leading and ending whitespaces
         $query =~ s/^\s+|\s+$//g;
         $query =~ s/\s+/</g;
         ##add one whitespace at the beginning
         $query = " ".$query;
         
-        my $selector;
-        $selector = $old_query if $old_query;
-        
+        my $selector = $old_query if $old_query;
         my $pos = 0;
         my $directpath = 0;
         my $empty_path =0;
@@ -209,7 +200,6 @@ sub _translate_css_to_xpath {
         
         ##I wrote this some while ago, I feel dizzy when I try to read it again
         while ($query =~ /([\s|\.|\:|\#]?)((\[.*?\])|(~)|(\+)|(\>)|(\<)|(\*)|([\w\-]+(\(.*?\))?))/g){
-            
             my $type = $1;
             my $value = $2;
             my $pos2 = 0;
@@ -217,7 +207,6 @@ sub _translate_css_to_xpath {
             ##set empty starting path
             if ($custompath eq 'empty' && $pos2 eq '0'){
                 $path = '';
-                
                 ###if we want to search direct childrens
             }   elsif ($directpath || $empty_path){
                 $path = '/';
@@ -263,13 +252,11 @@ sub _translate_css_to_xpath {
             } elsif ($value =~ /\[(.*?)\]/){
                 
                 my ($name, $value) = split(/\s*=\s*/, $1, 2);
-                
                 if (defined $value) {
                     for ($value) {
                         s/^['"]//;
                         s/['"]$//;
                     }
-                    
                     if ($name =~ s/\^$//){
                         $selector .= "[starts-with (\@$name,'$value')]";
                     } elsif ($name =~ s/\$$//){
@@ -300,7 +287,6 @@ sub _translate_css_to_xpath {
             } elsif ($type eq '#'){
                 $selector .= '[@id="'.$value.'"]';
             }
-            
             ###pseduo-class
             elsif ($type eq ':'){
                 
@@ -354,7 +340,6 @@ sub _translate_css_to_xpath {
                     } else{
                         $selector = $str1.'/child::*/parent::*[count(*)=1]'.'/'.$str2;
                     }
-                    
                 } elsif ($value eq "header"){
                     $selector = "getHeaders($selector)";
                 } elsif ($value eq "parent"){
@@ -373,7 +358,6 @@ sub _translate_css_to_xpath {
             $selector .= '[1]';
             $single = 0;
         }
-        
         $this_query++;
         push (@args,$selector);
     }
@@ -383,7 +367,6 @@ sub _translate_css_to_xpath {
 
 sub as_HTML {
     my $self = shift;
-    
     my $doc = $self->document;
     if (ref($doc) eq 'XML::LibXML::Document' ){
         my $html = $doc->serialize_html();
@@ -464,7 +447,6 @@ sub body { return shift->getElementsByTagName('body'); }
 sub makeArray {
     my ( $array, $results ) = @_;
     my $ret = $results || [];
-    
     if ( ref $array eq 'ARRAY' ) {
 	push @{$ret}, @{$array};
     } else { $ret = \@_; }
@@ -474,7 +456,6 @@ sub makeArray {
 }
 
 sub merge {
-    
     my ( $first, $second ) = @_;
     my $i = _length($first);
     my $j = 0;

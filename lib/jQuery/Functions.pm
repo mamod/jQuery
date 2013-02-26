@@ -1104,18 +1104,16 @@ sub ajax {
     my $data = $options->{data} || undef;
     my $contentType = $options->{contentType} || 'application/x-www-form-urlencoded';
     my $cache = $options->{cache} || undef;
+    
     my $ua = new LWP::UserAgent(timeout => $timeout);
     $ua->agent($agent);
     my $req;
-    if ($type eq 'POST'){
+    if (uc $type eq 'POST'){
         $req = HTTP::Request->new( POST, $options->{url});
         $req = HTTP::Request::Common::POST($options->{url},Content=>$data);
     } else {
-        
         $req = HTTP::Request->new();
-        
         $req->uri( $options->{url} );
-        
         if ($data){
             my $query = $req->uri->query;
             $req->uri->query_form( $data );
@@ -1124,10 +1122,12 @@ sub ajax {
     
     $req->method($type);
     $req->content_type($contentType);
+    
     ##excute beforeSend function
     if ($beforeSend){
         &$beforeSend($req);
     }
+    
     ##send request
     my $response = $ua->request($req);
     my $content = $response->content;
