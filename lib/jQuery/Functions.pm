@@ -9,7 +9,7 @@ our $VERSION = '0.006';
 
 my $base_class = 'jQuery';
 my $obj_class = 'jQuery::Obj';
-my $element_class = 'XML::LibXML::Element';
+
 sub jQuery { return jQuery::jQuery(@_) }
 
 #internal sub
@@ -952,7 +952,7 @@ sub wrapAll {
     if (!$to_append){ return $self; }
     my @new_nodes;
     foreach my $node (@nodes){
-        my $old_node = $node->cloneNode('1');
+        my $old_node = $node->cloneNode(1);
         push(@new_nodes,$old_node);
         $to_append->appendChild($old_node);
         $node->unbindNode() if $i > 0;
@@ -1034,16 +1034,12 @@ sub clone {
     my @nodes = $self->getNodes;
     return bless([], $base_class) if !@nodes;
     foreach my $node (@nodes){
-        my $clone = $node->cloneNode('1');
-        #$origdoc->setDocumentElement($node);
-        #$self->document->setDocumentElement($clone);
+        my $clone = $node->cloneNode(1);
         push(@cloned, $clone);
     }
     
-    #return bless(\@cloned,$obj_class);
     return wantarray ? @cloned
     : $self->pushStack(@cloned);
-
 }
 
 ###load, post, get functions
@@ -1059,7 +1055,7 @@ sub get {
     }
     
     #shift arguments if data argument was omited
-    if ( ref( $data ) eq 'CODE' ) {
+    if ( ref $data eq 'CODE' ) {
 	$type = $type || $callback;
 	$callback = $data;
 	$data = undef;
@@ -1108,7 +1104,7 @@ sub ajax {
     my $ua = new LWP::UserAgent(timeout => $timeout);
     $ua->agent($agent);
     my $req;
-    if (uc $type eq 'POST'){
+    if ($type eq 'POST'){
         $req = HTTP::Request->new( POST, $options->{url});
         $req = HTTP::Request::Common::POST($options->{url},Content=>$data);
     } else {

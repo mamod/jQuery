@@ -53,7 +53,7 @@ sub new {
 sub jquery {
     my ($selector, $context) = (shift,shift);
     my ($this,$c);
-    if ( ref ($selector) eq __PACKAGE__ ){
+    if ( ref $selector eq __PACKAGE__ ){
         $this->{document} = $selector->{document};
         $selector = $context;
         $context = shift;
@@ -68,21 +68,22 @@ sub jquery {
         return jQuery($context)->find($selector);
     }
     
-    if ( ref($selector) eq $obj_class ){
+    if ( ref $selector eq $obj_class ){
         return $selector;
     }
     
     bless($this, $obj_class);
     $this->{nodes} = [];
     return $this if !$selector;
+    
     my $nodes;
-    if ( ref($selector) =~ /XML::/i ){
+    if ( ref $selector =~ /XML::/i ){
         if ($selector->isa('ARRAY')){
             $nodes = $selector;
         } else {
             $nodes = [$selector];
         }
-    } elsif ( ref ($selector) eq 'ARRAY' ){
+    } elsif ( ref $selector eq 'ARRAY' ){
         $nodes = $selector;
     } elsif ($this->is_HTML($selector)) {
         $nodes = $this->createNode($selector);
@@ -368,7 +369,7 @@ sub _translate_css_to_xpath {
 sub as_HTML {
     my $self = shift;
     my $doc = $self->document;
-    if (ref($doc) eq 'XML::LibXML::Document' ){
+    if (ref $doc eq 'XML::LibXML::Document' ){
         my $html = $doc->serialize_html();
         if ($html =~ m/<div class="REMOVE_THIS_ELEMENT">/g){
             $html =~ s/(?:.*?)<div class="REMOVE_THIS_ELEMENT">(.*)<\/div>(?:.*)/$1/s;
@@ -381,7 +382,7 @@ sub as_HTML {
 sub as_XML {
     my $doc = $_[0]->document;
     if ($$DOC ne $$doc){
-        if (ref($doc) eq 'XML::LibXML::Document' ){
+        if (ref $doc eq 'XML::LibXML::Document' ){
             my $xml = $doc->serialize();
             if ($xml =~ m/<div class="REMOVE_THIS_ELEMENT">/g){
                 $xml =~ s/(?:.*?)<div class="REMOVE_THIS_ELEMENT">(.*)<\/div>(?:.*)/$1/s;
