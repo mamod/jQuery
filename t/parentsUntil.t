@@ -25,4 +25,8 @@ jQuery("li.item-2")->parentsUntil( jQuery("ul.level-1"), ".yes" )
   ->css("border", "3px solid green");
 
 my $got = jQuery->as_HTML;
+
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
+
 is($got,$expected);

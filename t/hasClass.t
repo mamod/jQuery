@@ -22,4 +22,8 @@ jQuery("div#result2")->append(jQuery("p:last")->hasClass("selected"));
 jQuery("div#result3")->append(jQuery("p")->hasClass("selected"));
 
 my $got = jQuery->as_HTML;
+
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
+
 is($got,$expected);

@@ -23,7 +23,7 @@ jQuery("p")->clone()->add("<span>Again</span>")
 
 my $got = jQuery->as_HTML;
 
-$got =~ s/\n//g;
-$expected =~ s/\n//g;
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
 
 is($got,$expected);

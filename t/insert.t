@@ -22,4 +22,8 @@ jQuery("#multiple")->val(["Multiple2", "Multiple3"]);
 jQuery("input")->val(["check1","check2", "radio1" ]);
 
 my $got = jQuery->as_HTML;
+
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
+
 is($got,$expected);

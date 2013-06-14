@@ -22,4 +22,8 @@ jQuery("div")->css("border", "2px solid red")
   ->css("background", "yellow");
 
 my $got = jQuery->as_HTML;
+
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
+
 is($got,$expected);

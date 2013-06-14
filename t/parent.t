@@ -23,4 +23,8 @@ jQuery("*", jQuery->document->body)->each(sub {
 });
 
 my $got = jQuery->as_HTML;
+
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
+
 is($got,$expected);

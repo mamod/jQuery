@@ -23,4 +23,8 @@ $dom->jQuery($dom->jQuery("p:odd"))->removeClass(sub {
 })->css('color','pink');
 
 my $got = $dom->as_HTML;
+
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
+
 is($got,$expected);

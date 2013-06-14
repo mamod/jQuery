@@ -26,4 +26,8 @@ jQuery("#term-1")->nextUntil($term3, "dd")
 ->css("color", "green");
 
 my $got = jQuery->as_HTML;
+
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
+
 is($got,$expected);

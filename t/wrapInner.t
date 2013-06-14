@@ -22,4 +22,8 @@ my $t = $dom->jQuery("body");
 $t->wrapInner("<div><div><p><em><b></b></em></p></div></div>");
 
 my $got = $dom->as_HTML;
+
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
+
 is($got,$expected);

@@ -20,4 +20,8 @@ jQuery->new($html);
 jQuery("div:nth-child(1)")->nextAll('p')->addClass("after");
 
 my $got = jQuery->as_HTML;
+
+$got =~ s/[\n\s+]//g;
+$expected =~ s/[\n\s+]//g;
+
 is($got,$expected);
