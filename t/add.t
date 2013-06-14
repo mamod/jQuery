@@ -22,4 +22,8 @@ jQuery("p")->clone()->add("<span>Again</span>")
 ->css('color','red');
 
 my $got = jQuery->as_HTML;
+
+$got =~ s/\n//g;
+$expected =~ s/\n//g;
+
 is($got,$expected);

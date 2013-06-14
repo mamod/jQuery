@@ -23,4 +23,8 @@ jQuery("div")->find("p")->andSelf()->addClass("border");
 jQuery("div")->find("p")->addClass("background");
 
 my $got = jQuery->as_HTML;
+
+$got =~ s/\n//g;
+$expected =~ s/\n//g;
+
 is($got,$expected);
