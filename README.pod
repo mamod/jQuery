@@ -41,7 +41,7 @@ my job way easier than thinking of how and why I can do this or that. of course 
 =head2 How this differ from other Perl jQuery modules?
 
 First, I wrote this long time ago, I wasn't sure if there were any jQuery modules then
-or maybe I didn't search CPAN well, then later I found pQuery which is nice, clean and written by
+or maybe I didn't search CPAN well, then later I found L<pQuery> which is nice, clean and written by
 Ingy döt Net
 
 =head2 Here are some differences
@@ -77,7 +77,6 @@ this method in loop represents current selected node
     jQuery('div')->each(sub{
         this->addClass('hola');
     });
-    
 
 =head1 Caveats
 
@@ -108,7 +107,6 @@ This way, different documents will never overlap, you may use the non OO style b
     $nodes->find('..')->css('border','1px solid red');
     jQuery->as_HTML;
     
-    
 =head1 Dependencies
 
     * XML::LibXML 1.70 and later
@@ -127,7 +125,7 @@ To install this module type the following:
 
 =head1 Methods
 
-See jQuery::Functions
+See L<jQuery::Functions>
 
 =head1 Examples
 
@@ -141,10 +139,8 @@ Mamod A. Mehyar, E<lt>mamod.mehyar@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2012 by Mamod A. Mehyar
+Copyright (C) 2011 - 2013 by Mamod A. Mehyar
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.1 or,
 at your option, any later version of Perl 5 you may have available.
-
-=cut
