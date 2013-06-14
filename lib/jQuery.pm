@@ -6,17 +6,21 @@ use XML::LibXML 1.70;
 use HTML::Entities;
 use Encode;
 use Carp;
+
 use base qw/jQuery::Functions Exporter/;
 our @EXPORT = qw(jquery jQuery this);
+
 use vars qw/$DOC $PARSER $VERSION/;
-$VERSION = '0.006';
+$VERSION = "0.004";
+
 my $obj_class = 'jQuery::Obj';
 sub this { 'jQuery::Functions'->this(@_) }
 
 sub new {
     my $class = shift;
     my $string = shift;
-    my ($parser,$doc);
+    my $parser;
+    my $doc;
     if (!$PARSER){
         $parser = XML::LibXML->new();
         $parser->recover(1);
@@ -42,8 +46,7 @@ sub new {
         }
         $DOC = $doc;
     }
-    ##store document to
-    ##keep an eye in case of multiple documents
+    
     return bless({
         document => $doc
     }, __PACKAGE__);
@@ -52,8 +55,10 @@ sub new {
 *jQuery = \&jquery;
 sub jquery {
     my ($selector, $context) = (shift,shift);
-    my ($this,$c);
-    if ( ref $selector eq __PACKAGE__ ){
+    my $this;
+    my $c;
+    
+    if ( ref ($selector) eq __PACKAGE__ ){
         $this->{document} = $selector->{document};
         $selector = $context;
         $context = shift;
@@ -68,22 +73,22 @@ sub jquery {
         return jQuery($context)->find($selector);
     }
     
-    if ( ref $selector eq $obj_class ){
+    if ( ref($selector) eq $obj_class ){
         return $selector;
     }
     
     bless($this, $obj_class);
-    $this->{nodes} = [];
+    $this->{nodes} = [];   
     return $this if !$selector;
     
     my $nodes;
-    if ( ref $selector =~ /XML::/i ){
+    if ( ref($selector) =~ /XML::/i ){   
         if ($selector->isa('ARRAY')){
             $nodes = $selector;
         } else {
             $nodes = [$selector];
         }
-    } elsif ( ref $selector eq 'ARRAY' ){
+    } elsif ( ref ($selector) eq 'ARRAY' ){
         $nodes = $selector;
     } elsif ($this->is_HTML($selector)) {
         $nodes = $this->createNode($selector);
@@ -94,6 +99,7 @@ sub jquery {
             $nodes = $this->createNode($selector);
         }
     }
+    
     return $this->pushStack(@$nodes);
 }
 
@@ -104,13 +110,13 @@ sub pushStack {
     
     return jQuery($self,@_) unless $self->isa('HASH') and
     ref $self eq $obj_class;
-    
     @elements = ref $_[0] eq 'ARRAY'
     ?   @{$_[0]}
     :   @_;
     
     #save old object
     $self->{prevObject} = $self->{nodes};
+    
     #$self = bless ([@elements], $obj_class);
     $self->{nodes} = \@elements;
     return $self;
@@ -145,6 +151,7 @@ sub getNodes {
     return wantarray ? @nodes : bless(\@nodes, $obj_class);
 }
 
+
 sub _find {
     my ($this, $selector, $context ) = @_;
     $context ||= $this->document;
@@ -159,7 +166,6 @@ sub _find {
     if ($@){
         croak $@;
     }
-    
     return wantarray 
     ? @nodes
     : \@nodes;
@@ -169,19 +175,16 @@ sub _find {
 #it's well maintained
 #this is faster but not easy to maintain and not quiet mature
 sub _translate_css_to_xpath {
-    
     my $self = shift;
     my $start_query = shift;
     my $old_query = shift;
     my $custompath = shift || '';
-    
     my @args;
     $start_query =~ s/\((.*?),(.*?)\)/\($1<COMMA>$2\)/g;
     my @queries = split(/\,/,$start_query);
-    
     my $this_query = 0;
+    
     foreach my $query (@queries){
-        
         $query =~ s/<COMMA>/,/g;
         #remove all leading and ending whitespaces
         $query =~ s/^\s+|\s+$//g;
@@ -189,7 +192,9 @@ sub _translate_css_to_xpath {
         ##add one whitespace at the beginning
         $query = " ".$query;
         
-        my $selector = $old_query if $old_query;
+        my $selector;
+        $selector = $old_query if $old_query;
+        
         my $pos = 0;
         my $directpath = 0;
         my $empty_path =0;
@@ -201,6 +206,7 @@ sub _translate_css_to_xpath {
         
         ##I wrote this some while ago, I feel dizzy when I try to read it again
         while ($query =~ /([\s|\.|\:|\#]?)((\[.*?\])|(~)|(\+)|(\>)|(\<)|(\*)|([\w\-]+(\(.*?\))?))/g){
+            
             my $type = $1;
             my $value = $2;
             my $pos2 = 0;
@@ -213,14 +219,12 @@ sub _translate_css_to_xpath {
                 $path = '/';
                 $path = '//' if $directpath eq '2';
                 $path = '' if $empty_path;
-                
                 if (($type =~ /(\:|\.|\#)/ || $value =~ /\[.*?\]/)){
                     $selector .= $path.'*';
                 }
                 
                 #reset direct path
                 $directpath = 0;
-                
                 ##reset empty path
                 $empty_path = 0;
             }   else {
@@ -229,7 +233,6 @@ sub _translate_css_to_xpath {
             
             $type =~ s/\s+//;
             $value =~ s/\s+//;
-            
             if ($pos == 0){
                 $path = $custompath if $custompath && $custompath ne 'empty';
                 if (($type =~ /(\:|\.|\#)/ || $value =~ /\[.*?\]/)){
@@ -258,6 +261,7 @@ sub _translate_css_to_xpath {
                         s/^['"]//;
                         s/['"]$//;
                     }
+                    
                     if ($name =~ s/\^$//){
                         $selector .= "[starts-with (\@$name,'$value')]";
                     } elsif ($name =~ s/\$$//){
@@ -288,6 +292,7 @@ sub _translate_css_to_xpath {
             } elsif ($type eq '#'){
                 $selector .= '[@id="'.$value.'"]';
             }
+            
             ###pseduo-class
             elsif ($type eq ':'){
                 
@@ -341,6 +346,7 @@ sub _translate_css_to_xpath {
                     } else{
                         $selector = $str1.'/child::*/parent::*[count(*)=1]'.'/'.$str2;
                     }
+                    
                 } elsif ($value eq "header"){
                     $selector = "getHeaders($selector)";
                 } elsif ($value eq "parent"){
@@ -354,7 +360,6 @@ sub _translate_css_to_xpath {
             }
             $pos++; $pos2++;
         }
-        
         if ($single){
             $selector .= '[1]';
             $single = 0;
@@ -362,14 +367,13 @@ sub _translate_css_to_xpath {
         $this_query++;
         push (@args,$selector);
     }
-    
     return join(' | ',@args);
 }
 
 sub as_HTML {
     my $self = shift;
     my $doc = $self->document;
-    if (ref $doc eq 'XML::LibXML::Document' ){
+    if (ref($doc) eq 'XML::LibXML::Document' ){
         my $html = $doc->serialize_html();
         if ($html =~ m/<div class="REMOVE_THIS_ELEMENT">/g){
             $html =~ s/(?:.*?)<div class="REMOVE_THIS_ELEMENT">(.*)<\/div>(?:.*)/$1/s;
@@ -379,10 +383,10 @@ sub as_HTML {
     return $doc->getDocumentElement->html();
 }
 
-sub as_XML {
+sub as_XML {   
     my $doc = $_[0]->document;
     if ($$DOC ne $$doc){
-        if (ref $doc eq 'XML::LibXML::Document' ){
+        if (ref($doc) eq 'XML::LibXML::Document' ){
             my $xml = $doc->serialize();
             if ($xml =~ m/<div class="REMOVE_THIS_ELEMENT">/g){
                 $xml =~ s/(?:.*?)<div class="REMOVE_THIS_ELEMENT">(.*)<\/div>(?:.*)/$1/s;
@@ -391,8 +395,10 @@ sub as_XML {
         }
         return $doc->getDocumentElement->html();
     }
+    
     return $doc->serialize();
 }
+
 
 sub is_HTML {
     my ($self,$html) = @_;
@@ -414,10 +420,18 @@ sub createNode {
     } else{
         $node = $PARSER->parse_html_string($html);
     }
+    
     $DOC = $node if !$DOC;
     $node->removeInternalSubset;
     my $nodes = $node->getDocumentElement->findnodes("//*[\@class='REMOVE_THIS_ELEMENT']")->[0]->childNodes;
     return $nodes;
+}
+
+sub createNode2 {
+    my ($self,$html) = @_;
+    $html = "<div class='REMOVE_THIS_ELEMENT'>".$html."</div>";
+    my $new = $self->new($html);
+    return $new->jQuery('.REMOVE_THIS_ELEMENT *');
 }
 
 ##detect node parent document
@@ -450,7 +464,8 @@ sub makeArray {
     my $ret = $results || [];
     if ( ref $array eq 'ARRAY' ) {
 	push @{$ret}, @{$array};
-    } else { $ret = \@_; }
+    }
+    else { $ret = \@_; }
     return wantarray
     ? @$ret
     : $ret;
@@ -460,7 +475,6 @@ sub merge {
     my ( $first, $second ) = @_;
     my $i = _length($first);
     my $j = 0;
-    
     if ( _length($second) ) {
 	for ( my $l = _length($second); $j < $l; $j++ ) {
 	    $first->[ $i++ ] = $second->[ $j ];
@@ -470,7 +484,6 @@ sub merge {
             $first->[ $i++ ] = $second->[ $j++ ];
 	}
     }
-
     $i = _length($first);
     return wantarray
     ? @$first
@@ -504,6 +517,7 @@ package jQuery::Obj;
 use base 'jQuery';
 
 ##hack Libxml modules to use jQuery as base module
+##is this a bad practice?
 package XML::LibXML::NodeList;
 use base 'jQuery::Obj';
 
@@ -564,7 +578,7 @@ my job way easier than thinking of how and why I can do this or that. of course 
 =head2 How this differ from other Perl jQuery modules?
 
 First, I wrote this long time ago, I wasn't sure if there were any jQuery modules then
-or maybe I didn't search CPAN well, then later I found pQuery which is nice, clean and written by
+or maybe I didn't search CPAN well, then later I found L<pQuery> which is nice, clean and written by
 Ingy döt Net
 
 =head2 Here are some differences
@@ -600,7 +614,6 @@ this method in loop represents current selected node
     jQuery('div')->each(sub{
         this->addClass('hola');
     });
-    
 
 =head1 Caveats
 
@@ -631,7 +644,6 @@ This way, different documents will never overlap, you may use the non OO style b
     $nodes->find('..')->css('border','1px solid red');
     jQuery->as_HTML;
     
-    
 =head1 Dependencies
 
     * XML::LibXML 1.70 and later
@@ -650,7 +662,7 @@ To install this module type the following:
 
 =head1 Methods
 
-See jQuery::Functions
+See L<jQuery::Functions>
 
 =head1 Examples
 
@@ -664,9 +676,8 @@ Mamod A. Mehyar, E<lt>mamod.mehyar@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2012 by Mamod A. Mehyar
+Copyright (C) 2011 - 2013 by Mamod A. Mehyar
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.1 or,
 at your option, any later version of Perl 5 you may have available.
-

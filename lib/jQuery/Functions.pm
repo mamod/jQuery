@@ -1,18 +1,14 @@
 ﻿package jQuery::Functions;
-
 use strict;
-use subs 'this';
 use warnings;
+use subs 'this';
 use HTTP::Request::Common qw(POST GET);
 use LWP::UserAgent;
-our $VERSION = '0.006';
-
 my $base_class = 'jQuery';
 my $obj_class = 'jQuery::Obj';
-
 sub jQuery { return jQuery::jQuery(@_) }
 
-#internal sub
+#mostly for internal use
 sub editElement {
     my ($self,$attr,$value,$remove_old) = @_;   
     foreach my $element ($self->getNodes){
@@ -29,7 +25,6 @@ sub editElement {
     return $self;
 }
 
-#internal sub
 sub GetSetAttr {
     my ($self, $key, $value) = @_;
     if (@_ == 3) {
@@ -43,9 +38,7 @@ sub GetSetAttr {
     }
 }
 
-#tested
-sub attr {
-    
+sub attr {    
     my ($self,$attr,$value) = @_;
     if (ref($attr) eq 'HASH'){
         while (my ($key,$val) = each(%{$attr})) {
@@ -77,7 +70,6 @@ sub attr {
     }
 }
 
-#tested
 sub removeAttr {
     my $self = shift;
     my $attr = shift;
@@ -87,7 +79,6 @@ sub removeAttr {
     return $self;
 }
 
-#tested
 sub addClass {
     my ($self,$new_class) = @_;
     if (ref($new_class) eq 'CODE'){
@@ -105,9 +96,7 @@ sub addClass {
     return $self;
 }
 
-##tested
-sub removeClass {
-    
+sub removeClass {    
     my ($self,$class_name) = @_;
     if (ref $class_name eq 'CODE'){
         return $self->each(sub{
@@ -120,7 +109,6 @@ sub removeClass {
     if (!$class_name){
         $self->removeAttr('class');
     } else {
-        
         my @classes = split (/ /, $class_name);
         foreach my $element ($self->toArray){
             my $cur_value;
@@ -138,11 +126,8 @@ sub removeClass {
     return $self;   
 }
 
-##tested
-sub toggleClass {
-    
+sub toggleClass {    
     my ($this,$value,$stateVal) = @_;
-    
     if ( ref $value eq 'CODE' ) {
 	return $this->each( sub {
             my $i = shift;
@@ -154,7 +139,6 @@ sub toggleClass {
     my $type = defined $value ? 1 : 0;
     my $isBool = defined $stateVal ? 1 : 0;
     return $this->each( sub {
-	
         my $i = shift;
         my $ele = shift;
         if ( $type ) {
@@ -167,22 +151,17 @@ sub toggleClass {
 		$state = $isBool ? $state : !$ele->hasClass($className);
 		$state ? $ele->addClass( $className ) : $ele->removeClass( $className );
 	    }
-            
 	} elsif ( !$type   ) {
             this->removeClass();
         }
     });
 }
 
-#tested
-sub hasClass {
-    
+sub hasClass {    
     my ($self,$has_class) = @_;
     foreach my $element ($self->toArray){
         if ( defined $element && defined($element->GetSetAttr('class')) ) {
-         
             my $cur_value = $element->GetSetAttr('class');
-            
             foreach my $cur_class (split(/ /, $cur_value)){               
                 if ($cur_class eq $has_class){
                     return 1;
@@ -190,7 +169,6 @@ sub hasClass {
             }      
         }
     }
-    
     return 0;
 }
 
@@ -198,11 +176,8 @@ sub toString {
     return shift->[0];
 }
 
-#tested
 sub val(){
-    
     my ($self,$content) = @_;
-    
     if (@_ == 2){
         my $i;
         foreach my $element ($self->getNodes){
@@ -211,17 +186,13 @@ sub val(){
                 if ($element->exists('self::*[@type="text"]')){
                     $content = join(', ',@{$content}) if ref($content) eq 'ARRAY';
                     $element->GetSetAttr('value',$content);
-                } else {
-                    
+                } else {                    
                     if (!ref $content){$content = [$content]}
                     if (ref($content) eq 'ARRAY'){
-                        
                         if ($element->nodeName eq "select"){
                             #get options
                             my @options = $element->findnodes('self::*/option');
                             foreach my $option (@options){
-                                
-                                #$option->GetSetAttr('selected','selected'); 
                                 if( ($option->hasAttribute('value') && grep{$option->GetSetAttr('value') eq $_}@{$content}) || (!$option->hasAttribute('value') && grep{ $option->findnodes('./text()')->string_value() eq $_}@{$content}) ){
                                     $option->GetSetAttr('selected','selected');
                                 } else {
@@ -232,9 +203,8 @@ sub val(){
                             $element->GetSetAttr('checked','checked');
                         }
                     }
-                    
                 }
-            ##if textarea
+	    ##if textarea
             } elsif ($element->nodeName eq "textarea"){
                 $element->text($content);
             }
@@ -269,9 +239,9 @@ sub id {
 }
 
 {
-no warnings 'redefine';
-#XML::LibXML::Element::find();
-*XML::LibXML::Element::find = \&find;
+    no warnings 'redefine';
+    #XML::LibXML::Element::find();
+    *XML::LibXML::Element::find = \&find;
     sub find {
         my $self = shift;
         my $query = shift;
@@ -299,11 +269,8 @@ no warnings 'redefine';
     };
 }
 
-#tested
 sub css {
-    
     my ($self,$options,$val) = @_;
-    
     my $style;
     if (ref($options) eq 'HASH'){
         while ( my ($key, $value) = each(%{$options}) ) {
@@ -317,15 +284,12 @@ sub css {
 }
 
 my $THIS;
-#tested
 sub each {
-    
     my ($self,$sub,$type) = @_;
     my @elements;
     my $i = 0;
     my $return = 0;
     my @nodes = $self->getNodes();
-    
     #loop and bless each element
     foreach my $element (@nodes) {
         $THIS = $element;
@@ -341,7 +305,6 @@ sub each {
     return wantarray 
         ? @elements
         : $self->pushStack(@elements);
-    
 }
 
 sub this {
@@ -353,19 +316,29 @@ sub this {
 
 my $data = {};
 sub data {
-    my $element = shift;
-    my ($self,$name,$value) = @_;
-    if (ref $element =~ /$base_class/){
-        $element = $self;
-    } if ($value){
-        $data->{$$element}->{$name} = $value;
+    my ($self,$name,$value,$extra) = @_;
+    if (ref $name){
+	$self = $name;
+	$name = $value;
+	$value = $extra;
     }
-    return $data->{$$element}->{$name} || '';
+    
+    if (!$value){
+	my $e = $self->get(0);
+	return $data->{$$e}->{$name} || '';
+    }
+    
+    $self->each(sub{
+	my $i = shift;
+	my $e = shift;
+	$data->{$$e}->{$name} = $value;
+    });
+    
+    return $self;
 }
 
-#tested, need some more tests
+#TODO -- need some more tests
 sub filter {
-    
     my ($self,$selector,$filter_type) = @_;
     my @elements;
     my $i = 0;
@@ -374,9 +347,7 @@ sub filter {
     ##then return duplicates
     my @new_nodes;
     my @old_nodes = $self->toArray;
-    
     if (ref $selector eq 'CODE'){
-        
         my @nodes = $self->each(sub {
             my $i = shift;
             my $this = shift;
@@ -402,9 +373,7 @@ sub filter {
     return wantarray 
         ? @elements
         : $self->pushStack(@elements);
-    
 }
-
 
 sub matchesSelector {
     my ($self,$element,$selector) = @_;
@@ -421,10 +390,7 @@ sub querySelectorAll {
     return @nodeList;
 }
 
-
-#tested
-sub map {
-    
+sub map {    
     my ($self, $elems, $callback, $arg) = @_;
     if (ref($elems) eq 'CODE'){
         $arg = $callback;
@@ -436,7 +402,6 @@ sub map {
     my @flat;
     my $value;
     my $i = 0;
-    
     $self->each(sub{
         my $i = shift;
         $value = &$callback( $i, this, $arg );
@@ -456,9 +421,7 @@ sub map {
     return $self->pushStack(@flat);
 }
 
-#tested
-sub html {
-    
+sub html {    
     my ($self,$content) = @_;
     if (ref $content eq 'CODE'){
         $self->each( sub {
@@ -466,7 +429,6 @@ sub html {
             my $ele = shift;
             $ele->html( &$content($i, $ele->html() ) );
 	});
-        
     } elsif (defined $content){
         my $i;
         my $nd;
@@ -488,16 +450,11 @@ sub html {
             return '';
         }
     }
-    
     return $self;
 }
 
-#tested
 sub text {
-    
     my ($self,$text) = @_;
-    
-    
     if ( ref $text eq 'CODE' ) {
 	return $self->each( sub {
             my $i = shift;
@@ -505,7 +462,6 @@ sub text {
 	    $ele->text( &$text($i, $ele->text() ) );
 	});
     }
-    
     if (defined $text){
         foreach my $element ($self->toArray) {
             $element->empty()->append( ($element && $element->ownerDocument || jQuery->document)->createTextNode( $text ) );
@@ -517,10 +473,8 @@ sub text {
         }
         return $text || '';
     }
-    
     return $self;
 }
-
 
 sub empty {
     my $self = shift;
@@ -530,19 +484,14 @@ sub empty {
     return $self;
 }
 
-#tested
 sub append { return shift->_pend(@_,'append'); }
 sub prepend { return shift->_pend(@_,'prepend'); }
-
 sub _pend {
-    
     my ($self,$content,$content2,$method) = @_;
-    
     if (!$method){
         $method = $content2;
         $content2 = undef;
     }
-    
     if ( ref ($content) eq 'CODE' ){
         return $self->each(sub {
             my $i = shift;
@@ -550,13 +499,11 @@ sub _pend {
             $self->$method( &$content( $i,$ele->html() ) );
         }); 
     }
-    
     my @elements = $self->toArray;
     if ($content){
         ###get nodes to pend
         my $nodes = jQuery($content);
-        foreach my $element (@elements) {
-            
+        foreach my $element (@elements) {       
             #get element html content
             my $html = $element->html();
             my @clone = $nodes->clone();
@@ -570,14 +517,11 @@ sub _pend {
     } if ($content2){
         return $self->$method($content2);
     }
-
     return $self;
 }
 
-#tested
 sub appendTo { return $_[0]->_pendTo($_[1],'appendTo'); }
 sub prependTo { return $_[0]->_pendTo($_[1],'prependTo'); }
-
 sub _pendTo {
     my ($self,$content,$method) = @_;
     my @elements = $self->toArray;
@@ -600,7 +544,6 @@ sub _pendTo {
     return $self->pushStack(@new);
 }
 
-#tested
 sub add {
     my ( $self, $selector, $context ) = @_;
     my @set = jQuery($selector,$context)->toArray;
@@ -608,13 +551,11 @@ sub add {
     return $self->pushStack( @all );
 }
 
-
 sub add2 {
     my ( $self, $selector, $context ) = @_;
     my @set = !ref $selector ?
 	jQuery( $selector, $context )->toArray :
-	jQuery::makeArray( $selector && $selector->nodeType ? [ $selector ] : $selector )->toArray;
-        
+	jQuery::makeArray( $selector && $selector->nodeType ? [ $selector ] : $selector )->toArray;        
         my @all = jQuery::merge( [$self->this], [@set] );
     
     return $self->pushStack( jQuery::isDisconnected( $set[0] ) || jQuery::isDisconnected( $all[0] ) ?
@@ -622,7 +563,6 @@ sub add2 {
 	jQuery::unique( @all ) );
 }
 
-#tested
 sub andSelf {
     return $_[0]->add( $_[0]->prevObject );
 }
@@ -631,23 +571,19 @@ sub prevObject {
     return $_[0]->{prevObject};
 }
 
-#tested
 sub next { return $_[0]->_next($_[1],'next'); }
 sub nextAll { return $_[0]->_next($_[1],'nextAll'); }
 sub nextUntil { return shift->_next(@_,'nextUntil'); }
 
-#tested
 sub prev { return $_[0]->_next($_[1],'prev'); }
 sub prevAll { return $_[0]->_next($_[1],'prevAll'); }
 sub prevUntil { return shift->_next(@_,'prevUntil'); }
 
-#tested
 sub parent { return $_[0]->_next($_[1],'parent'); }
 sub parents { return $_[0]->_next($_[1],'parents'); }
 sub parentsUntil { return shift->_next(@_,'parentsUntil'); }
 
 sub siblings { return $_[0]->_next($_[1],'siblings'); }
-
 
 sub _next {
     my $self = shift;
@@ -725,7 +661,6 @@ sub _next {
     return $self->pushStack(@elements);
 }
 
-#tested
 sub children {
     my $self = shift;
     my $selector = shift || '*';
@@ -752,7 +687,6 @@ sub closest {
     return $self->pushStack(@close_parent);
 }
 
-
 sub contents {
     my $self  = shift;
     my $elem = shift;
@@ -773,7 +707,6 @@ sub eq {
     my $index = shift;
     my @ele = $self->toArray;
     my @node = ($ele[$index]);
-    #return \@node;
     return $self->pushStack(@node);
 }
 
@@ -812,13 +745,11 @@ sub contains {
     #not sure why this didnt work
     #return $container->exists( $contained->nodePath );
     my @childs = $container->findnodes('descendant::*');
-    #return \@childs;
     foreach my $child (@childs){
         return 1 if $$contained == $$child;
     }
     return 0;
 }
-
 
 sub is {
     my $self = shift;
@@ -850,8 +781,6 @@ sub replaceWith {
     my $self = shift;
     my $selector = shift;
     my $value = $selector;
-    
-    #return $selector;
     my $nodes = jQuery($selector);
     if ( ref $selector eq 'CODE' ) {
 	return $self->each( sub {
@@ -911,7 +840,7 @@ sub wrapInner {
             jQuery($this)->wrapInner( &$html($i,$this) );
         });
     }
-
+    
     return $this->each( sub {
 	my $self = jQuery( $this );
 	my $contents = $self->contents();
@@ -952,7 +881,7 @@ sub wrapAll {
     if (!$to_append){ return $self; }
     my @new_nodes;
     foreach my $node (@nodes){
-        my $old_node = $node->cloneNode(1);
+        my $old_node = $node->cloneNode('1');
         push(@new_nodes,$old_node);
         $to_append->appendChild($old_node);
         $node->unbindNode() if $i > 0;
@@ -963,7 +892,6 @@ sub wrapAll {
     $nodes[0]->replaceNode($parent_node);
     return $self->pushStack(@new_nodes);
 }
-
 
 sub after {return $_[0]->_beforeAfter($_[1],'after');}
 sub before {return $_[0]->_beforeAfter($_[1],'before');}
@@ -984,8 +912,7 @@ sub _beforeAfter {
             return if !$t;
             jQuery($this)->$insert_type( $t );
         });
-    }
-    
+    }   
     my $self;
     my @m;
     my $action = {
@@ -1046,16 +973,15 @@ sub clone {
 ### FIXME - should rewrite this!!!
 sub get {
     my ( $self, $url, $data, $callback, $type ) = @_;
-    
     ##get node, not Ajax function
-    if (!$url){
-        return $self;
-    } elsif ($url =~ /\d+/){
+    if (defined $url && $url =~ /\d+/){
         return $self->getNode($url);
+    } elsif (!$url){
+        return $self;
     }
     
     #shift arguments if data argument was omited
-    if ( ref $data eq 'CODE' ) {
+    if ( ref( $data ) eq 'CODE' ) {
 	$type = $type || $callback;
 	$callback = $data;
 	$data = undef;
@@ -1088,7 +1014,7 @@ sub post {
     });
 }
 
-
+##TODO - tests
 sub ajax {
     my ( $self, $options ) = @_;
     my $type = uc($options->{type}) || 'GET';
@@ -1104,7 +1030,7 @@ sub ajax {
     my $ua = new LWP::UserAgent(timeout => $timeout);
     $ua->agent($agent);
     my $req;
-    if ($type eq 'POST'){
+    if (uc $type eq 'POST'){
         $req = HTTP::Request->new( POST, $options->{url});
         $req = HTTP::Request::Common::POST($options->{url},Content=>$data);
     } else {
@@ -1137,9 +1063,6 @@ sub ajax {
     return $content;
 }
 
-
-
-
 sub length {
     return scalar $_[0]->getNodes;
 }
@@ -1149,7 +1072,6 @@ sub detach {
     my $selector = shift;
     return $self->remove($selector,'true');
 }
-
 
 sub remove {
     my $self = shift;
@@ -1171,15 +1093,12 @@ sub remove {
     return $self->pushStack([]);
 }
 
-
 sub join {
     my ($self,$char) = @_;
-    return join($char,$self->getNodes);
+    return join($char || '',$self->getNodes);
 }
 
 1;
 
 __END__
-
-
 

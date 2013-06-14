@@ -5,19 +5,19 @@ use Test::More tests => 1;
 
 my $html = do {
     local $/; 
-    open my $fh, '<', $Bin . '/html/Children.html';
+    open my $fh, '<', $Bin . '/html/wrapAll.html';
     <$fh>;
 };
 
 my $expected = do {
     local $/;
-    open my $fh, '<', $Bin . '/expected/Children.html';
+    open my $fh, '<', $Bin . '/expected/wrapAll.html';
     <$fh>;
 };
 
 jQuery->new($html);
 
-jQuery("div")->children()->css("border-bottom", "3px double red");
+jQuery("span")->wrapAll("<div><div><p><em><b></b></em></p></div></div>");
 
 my $got = jQuery->as_HTML;
 is($got,$expected);

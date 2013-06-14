@@ -5,19 +5,21 @@ use Test::More tests => 1;
 
 my $html = do {
     local $/; 
-    open my $fh, '<', $Bin . '/html/Children.html';
+    open my $fh, '<', $Bin . '/html/contents.html';
     <$fh>;
 };
 
 my $expected = do {
     local $/;
-    open my $fh, '<', $Bin . '/expected/Children.html';
+    open my $fh, '<', $Bin . '/expected/contents.html';
     <$fh>;
 };
 
 jQuery->new($html);
 
-jQuery("div")->children()->css("border-bottom", "3px double red");
+jQuery("div")->css("border", "2px solid red")
+  ->add("p")->add('p')
+  ->css("background", "yellow");
 
 my $got = jQuery->as_HTML;
 is($got,$expected);

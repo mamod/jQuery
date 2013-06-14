@@ -5,19 +5,19 @@ use Test::More tests => 1;
 
 my $html = do {
     local $/; 
-    open my $fh, '<', $Bin . '/html/Children.html';
+    open my $fh, '<', $Bin . '/html/toggleClass.html';
     <$fh>;
 };
 
 my $expected = do {
     local $/;
-    open my $fh, '<', $Bin . '/expected/Children.html';
+    open my $fh, '<', $Bin . '/expected/toggleClass.html';
     <$fh>;
 };
 
 jQuery->new($html);
 
-jQuery("div")->children()->css("border-bottom", "3px double red");
+jQuery("p")->toggleClass("highlight");
 
 my $got = jQuery->as_HTML;
 is($got,$expected);

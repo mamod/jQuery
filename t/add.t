@@ -5,19 +5,21 @@ use Test::More tests => 1;
 
 my $html = do {
     local $/; 
-    open my $fh, '<', $Bin . '/html/Children.html';
+    open my $fh, '<', $Bin . '/html/add.html';
     <$fh>;
 };
 
 my $expected = do {
     local $/;
-    open my $fh, '<', $Bin . '/expected/Children.html';
+    open my $fh, '<', $Bin . '/expected/add.html';
     <$fh>;
 };
 
 jQuery->new($html);
 
-jQuery("div")->children()->css("border-bottom", "3px double red");
+jQuery("p")->clone()->add("<span>Again</span>")
+->appendTo(jQuery->document->body)
+->css('color','red');
 
 my $got = jQuery->as_HTML;
 is($got,$expected);

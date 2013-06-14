@@ -5,19 +5,22 @@ use Test::More tests => 1;
 
 my $html = do {
     local $/; 
-    open my $fh, '<', $Bin . '/html/Children.html';
+    open my $fh, '<', $Bin . '/html/andSelf.html';
     <$fh>;
 };
 
 my $expected = do {
     local $/;
-    open my $fh, '<', $Bin . '/expected/Children.html';
+    open my $fh, '<', $Bin . '/expected/andSelf.html';
     <$fh>;
 };
 
+
+
 jQuery->new($html);
 
-jQuery("div")->children()->css("border-bottom", "3px double red");
+jQuery("div")->find("p")->andSelf()->addClass("border");
+jQuery("div")->find("p")->addClass("background");
 
 my $got = jQuery->as_HTML;
 is($got,$expected);
